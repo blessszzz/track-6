@@ -11,7 +11,7 @@ An explainable diabetes / prediabetes risk model and a trilingual (English, Fran
 4. A **Model card** tab shows accuracy, a benchmark vs a black-box model, a fairness audit and known limits.
 
 ## Try it
-- **Live demo:** [techwave-track-6.netlify.app]
+- **Live demo:** [techwave-track-6.netlify.app](https://netlify.app)
 - **No install:** open `web/standalone.html` in any browser. It is the same model, the same three languages, one file, works offline.
 - **2-minute video:** `<PASTE YOUR VIDEO LINK HERE>`
 
