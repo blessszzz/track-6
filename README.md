@@ -29,7 +29,7 @@ python tools/make_submission.py --team "Your Team" --members "A, B, C"   # deck 
 
 On the HTTPS live demo, use **Install app** / **Add to Home screen** in Android Chrome. On iPhone or iPad, open in Safari and choose **Share → Add to Home Screen** (enable Open as Web App if offered). On desktop Chrome or Edge, use the address-bar install icon or browser menu; on supported macOS Safari versions, use **File → Add to Dock**. Options vary by browser and OS.
 
-Load the app online and leave it open while the service worker caches both pages and their assets. After caching completes, the installed app can launch offline: questions, scores, explanations, all three languages, model card, and reminder copying remain available. Google Calendar needs internet; clipboard support depends on the browser. The existing `.ics` export belongs to the Streamlit app; the web app has no `.ics` download control. Fonts are cached when reachable; otherwise the existing system-font fallbacks apply. Only public static files are cached, never completed questionnaires or results. Existing language preference storage is unchanged.
+Load the app online and leave it open while the service worker caches both pages and their assets. After caching completes, the installed app can launch offline: questions, scores, explanations, all three languages and reminder copying remain available. Google Calendar needs internet; clipboard support depends on the browser. The existing `.ics` export belongs to the Streamlit app; the web app has no `.ics` download control. Fonts are cached when reachable; otherwise the existing system-font fallbacks apply. Only public static files are cached, never completed questionnaires or results. Existing language preference storage is unchanged.
 
 To test locally, run `python -m http.server 8000 --directory web`, open `http://localhost:8000/`, and check DevTools **Application → Manifest / Service Workers / Cache Storage**. Wait for the worker to activate, then switch the browser offline and reload. Service workers require HTTPS or localhost. Directly opening `web/standalone.html` still works without installation.
 
@@ -37,9 +37,17 @@ Run `python tools/build_web.py` after app changes; it rebuilds both HTML pages a
 
 Developer verification: `python tools/test_pwa.py` requires Playwright, its Chromium browser, and Pillow in the test environment (not app dependencies). It compares the web app against the Git HEAD version and checks installation prerequisites, offline behavior, and cache updates. The checked-in icons can optionally be regenerated with `python tools/generate_pwa_icons.py` (Pillow), then rebuild the web app.
 
+## Voice and text screening
+
+The welcome screen offers Voice first, then Text, with a greeting in English, French and Mauritian Creole. Browsers may block automatic speech until a user gesture; use the greeting replay button if needed. Voice mode reads each question and its choices. Tap Speak my answer, review or correct the visible transcript, then Confirm this answer to apply it and continue. Ambiguous or out-of-range answers are rejected rather than guessed. Height and weight require two numbers in that order (cm, kg). Text controls remain available throughout.
+
+Read-aloud uses installed local voices only. Creole uses a local French voice when no Creole voice exists; pronunciation may be imperfect. Recognition requests `mfe-MU` for Creole, but browser support is not guaranteed. If unsupported, choose English/French or Text. On-device recognition is required by default; missing language packs or unsupported devices fall back to text. Users can explicitly allow browser speech processing, which may transmit audio to their browser provider and may need internet. This session-only choice resets for a new patient. No recordings or transcripts are stored by this app; browser-provider processing follows that provider's policies. No new speech service, API key or dependency is added.
+
+Microphone access needs HTTPS or localhost, browser permission, and speech-recognition support. Text screening continues to work offline; voice availability depends on installed voices, language packs and browser support. Real microphone accuracy, audio playback, Creole pronunciation, and provider behavior require manual testing on the target device. Automated tests simulate speech events to check review/confirmation, parsing, consent and text fallback.
+
 ## Screening flow and administrator deployment
 
-The patient app shows one question at a time, with Back/Next controls, progress, and a report with reminder actions only after the final question. Height and weight share the BMI question. Answers stay in memory and are cleared with New patient. The prototype/privacy notices are available under About this screening; the report also repeats the original prototype warning. Transitions respect reduced-motion preferences.
+The patient app shows one question at a time, with Back/Next controls, progress, and a report with reminder actions only after the final question. Height and weight share the BMI question. Answers stay in memory and are cleared with New patient. The About this screening section is omitted from the patient view; the report retains the original prototype warning. Transitions respect reduced-motion preferences.
 
 `python tools/build_web.py` also generates **`admin-web/`**, a separate model-card site. Publish only **`web/`** to the public patient project. Never upload the repository root or put `admin-web/` inside `web/`. The public app does not include the performance/fairness datasets, model-card tab, or administrator site in its offline cache. The scoring model necessarily remains available in the offline patient app.
 
@@ -68,7 +76,7 @@ Public CDC **BRFSS 2015** survey indicators (Kaggle: "Diabetes Health Indicators
 - **Explanation:** for each factor, contribution = coefficient × (value − average) / SD, shown as an odds multiplier versus an average respondent. This is exact for a logistic model.
 
 ## Every model, API and library used
-scikit-learn (LogisticRegression, metrics), LightGBM (benchmark only), pandas, NumPy, Matplotlib, Streamlit (UI), python-pptx (deck generator). The single-file web version uses plain JavaScript and Google Fonts for typography only. **No external APIs receive user inputs**; the only outbound link is an optional \"Add to Google Calendar\" button that opens a pre-filled calendar page when the user clicks it (it contains only the reminder text and date, never answers).
+scikit-learn (LogisticRegression, metrics), LightGBM (benchmark only), pandas, NumPy, Matplotlib, Streamlit (UI), python-pptx (deck generator). The single-file web version uses plain JavaScript and Google Fonts for typography only. **Scoring runs locally. Optional browser speech recognition can send audio to the browser provider only after the user allows browser speech processing**; the only outbound link is an optional \"Add to Google Calendar\" button that opens a pre-filled calendar page when the user clicks it (it contains only the reminder text and date, never answers).
 
 ## Languages
 English, French and Mauritian Creole (`app/i18n.py`). **Creole and French text were drafted by an AI assistant: have native speakers and a clinician review them before any real use.**

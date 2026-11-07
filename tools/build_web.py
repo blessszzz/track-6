@@ -52,6 +52,7 @@ def main():
     fair = pd.read_csv(ROOT / "reports" / "fairness.csv").round(4).to_dict("records")
     html = (ROOT / "tools" / "web_template.html").read_text(encoding="utf-8")
     html = html.replace("__JOURNEY_CODE__", (ROOT / "tools" / "journey.js").read_text(encoding="utf-8"))
+    html = html.replace("__VOICE_CODE__", (ROOT / "tools" / "voice.js").read_text(encoding="utf-8"))
     dump = lambda o: json.dumps(o, ensure_ascii=False)
     html = (html.replace("__I18N__", dump(T)).replace("__FEATNAME__", dump(FEATNAME)).replace("__EXTRA__", dump(EXTRA))
             .replace("__MODEL__", dump(model)).replace("__METRICS__", dump(metrics)).replace("__FAIR__", dump(fair)))

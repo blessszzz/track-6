@@ -21,6 +21,7 @@ from PIL import Image
 
 def main():
     original = subprocess.check_output(['git', 'show', 'HEAD:web/index.html'], cwd=ROOT).decode('utf-8')
+    original_admin = subprocess.check_output(['git', 'show', 'HEAD:admin-web/index.html'], cwd=ROOT).decode('utf-8')
     current = (ROOT / 'web/index.html').read_text(encoding='utf-8')
     script = lambda html: re.findall(r'<script>(.*?)</script>', html, re.S)[0]
     for name, end in [('compute', '/* ---------- form'), ('update', '/* ---------- chrome')]:
@@ -47,8 +48,8 @@ def main():
                 self.end_headers()
                 self.wfile.write(worker_override[0].encode('utf-8'))
                 return
-            if self.path == '/baseline.html':
-                body = original.encode('utf-8')
+            if self.path in ['/baseline.html','/baseline-admin.html']:
+                body = (original_admin if self.path=='/baseline-admin.html' else original).encode('utf-8')
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/html; charset=utf-8')
                 self.end_headers()
@@ -76,8 +77,10 @@ def main():
             baseline.goto(origin + '/baseline.html')
             admin = context.new_page()
             admin.goto((ROOT / 'admin-web/index.html').as_uri())
+            baseline_admin = context.new_page()
+            baseline_admin.goto(origin+'/baseline-admin.html')
             for language in ['en', 'fr', 'mfe']:
-                expected=baseline.evaluate('(language)=>{lang=language;buildCard();return $("mc").innerHTML}',language)
+                expected=baseline_admin.evaluate('(language)=>{lang=language;buildCard();return $("mc").innerHTML}',language)
                 admin.select_option('#language',language)
                 assert admin.locator('#mc').inner_html()==expected
             assert admin.evaluate('navigator.serviceWorker.controller') is None
@@ -92,6 +95,46 @@ def main():
                     expression = '(arg) => {lang=arg.language; S={...DEMO,...arg.state};full(); return {score:compute(),result:$("result").innerHTML}}'
                     args = dict(language=language, state=state)
                     assert baseline.evaluate(expression, args) == page.evaluate(expression, args)
+            # Mock recognition events: verify transcript review, consent, and conservative parsing.
+            # This tests the integration, not microphone accuracy or installed device voices.
+            page.evaluate('document.getElementById("reset").click()')
+            page.click('[data-lang="en"]')
+            page.evaluate('''() => {
+              window.testSpoken=[];
+              window.SpeechSynthesisUtterance=class {constructor(text){this.text=text;}};
+              Object.defineProperty(window,'speechSynthesis',{value:{
+                getVoices:()=>['en-GB','fr-FR','mfe-MU'].map(lang=>({lang,localService:true})),
+                cancel(){},speak(utterance){testSpoken.push(utterance);},addEventListener(){}
+              }});
+              window.SpeechRecognition=class {
+                constructor(){this.processLocally=false;window.testRecognition=this;}
+                start(){} abort(){}
+              };
+            }''')
+            page.evaluate('greetings()')
+            assert page.evaluate('testSpoken.map(item=>item.lang)')==['en-GB','fr-FR','mfe-MU']
+            page.click('#choose-voice')
+            page.click('#listen')
+            assert page.evaluate('testRecognition.processLocally')
+            page.evaluate('testRecognition.onresult({results:[Object.assign([{transcript:"sixty"}],{isFinal:false})]})')
+            assert page.locator('#confirm-voice').is_disabled()
+            page.evaluate('testRecognition.onresult({results:[Object.assign([{transcript:"sixty two"}],{isFinal:true})]})')
+            assert page.input_value('#voice-transcript')=='sixty two'
+            assert page.evaluate('S.age')==45
+            page.click('#confirm-voice')
+            assert page.evaluate('S.age')==62 and page.evaluate('step')==1
+            page.click('#listen')
+            page.evaluate('testRecognition.onresult({results:[Object.assign([{transcript:"male"}],{isFinal:true})]})')
+            page.click('#confirm-voice')
+            assert page.evaluate('step')==2
+            page.check('#speech-consent');page.click('#listen')
+            assert not page.evaluate('testRecognition.processLocally')
+            page.evaluate('testRecognition.onresult({results:[Object.assign([{transcript:"999 85"}],{isFinal:true})]})')
+            page.click('#confirm-voice');assert page.evaluate('step')==2
+            page.fill('#voice-transcript','170 85');page.click('#confirm-voice')
+            assert page.evaluate('step')==3 and page.evaluate('S.weight')==85
+            page.click('#use-text');assert page.locator('#voice-controls').is_hidden()
+            page.evaluate('document.getElementById("reset").click()')
             session = context.new_cdp_session(page)
             info = session.send('Page.getAppManifest')
             assert not info['errors'], info['errors']
@@ -99,6 +142,7 @@ def main():
             assert not install['installabilityErrors'], install
             context.set_offline(True)
             page.reload()
+            page.click('#choose-text')
             for language in ['en', 'fr', 'mfe']:
                 page.click(f'[data-lang="{language}"]')
                 assert page.evaluate('MODEL.features.length') == 16
@@ -123,6 +167,7 @@ def main():
             assert page.locator('.journey-question:visible').count()==1
             page.click('#next');page.click('#next')
             page.click('#reset');assert page.locator('#report').is_hidden()
+            assert page.locator('#welcome').is_visible()
             assert page.input_value('#age')==''
             page.set_viewport_size({'width':390,'height':844})
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')

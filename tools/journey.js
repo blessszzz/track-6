@@ -30,7 +30,7 @@ function buildForm(){
 }
 function renderJourney(focus=false){
   const f=FLOW[lang];
-  $("about-label").textContent=f.about;
+
   $("journey").hidden=complete;$("report").hidden=!complete;
   $("previous").textContent=f.back;$("previous").disabled=step===0;
   $("next").textContent=step===15?f.finish:f.next;
@@ -45,6 +45,7 @@ function renderJourney(focus=false){
     section.classList.remove('step-enter');
     if(index===step && focus){void section.offsetWidth;section.classList.add('step-enter');section.tabIndex=-1;section.focus({preventScroll:true});}
   });
+  document.dispatchEvent(new CustomEvent('journeychange'));
   if(complete && focus){$("report").tabIndex=-1;$("report").focus({preventScroll:true});}
 }
 document.addEventListener('click',event=>{
