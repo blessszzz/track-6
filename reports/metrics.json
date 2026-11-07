@@ -1,0 +1,120 @@
+{
+  "data_file": "diabetes_binary_health_indicators_BRFSS2015.csv",
+  "n_rows": 253680,
+  "prevalence": 0.13933301797540207,
+  "split": {
+    "train": 152208,
+    "val": 50736,
+    "test": 50736
+  },
+  "features_used": [
+    "HighBP",
+    "HighChol",
+    "BMI",
+    "Smoker",
+    "Stroke",
+    "HeartDiseaseorAttack",
+    "PhysActivity",
+    "Fruits",
+    "Veggies",
+    "HvyAlcoholConsump",
+    "GenHlth",
+    "MentHlth",
+    "PhysHlth",
+    "DiffWalk",
+    "Sex",
+    "Age"
+  ],
+  "excluded_from_model": [
+    "Income",
+    "Education",
+    "CholCheck",
+    "AnyHealthcare",
+    "NoDocbcCost"
+  ],
+  "thresholds": {
+    "screen": 0.12309462314451186,
+    "high": 0.1906039889319339,
+    "target_sensitivity": 0.8,
+    "target_ppv_high": 0.35
+  },
+  "deployed_test": {
+    "roc_auc": 0.818220484773744,
+    "pr_auc": 0.39819663527844695,
+    "brier": 0.09971721209149145,
+    "sensitivity": 0.7991229311076531,
+    "specificity": 0.6870634575308585,
+    "ppv": 0.2924821373097235,
+    "npv": 0.9548087327350264,
+    "flagged_rate": 0.3806764427625355
+  },
+  "high_band_test": {
+    "sensitivity": 0.6553968029424246,
+    "specificity": 0.805642705017519,
+    "ppv": 0.353125,
+    "npv": 0.935240323266695,
+    "flagged_rate": 0.2585935036266162
+  },
+  "benchmarks": {
+    "Logistic (16 features) - deployed": {
+      "roc_auc": 0.818220484773744,
+      "pr_auc": 0.39819663527844695,
+      "brier": 0.09971721209149145
+    },
+    "LightGBM (16 features)": {
+      "roc_auc": 0.8256375444967199,
+      "pr_auc": 0.4248150852151574,
+      "brier": 0.0973674072407913
+    },
+    "LightGBM (all 21 features)": {
+      "roc_auc": 0.8279985647236736,
+      "pr_auc": 0.4293049462249466,
+      "brier": 0.09689759651933529
+    }
+  },
+  "fairness_gaps": {
+    "Age band": {
+      "sensitivity_gap": 0.48547752013794165,
+      "fpr_gap": 0.5264396311902653
+    },
+    "Education (audit only)": {
+      "sensitivity_gap": 0.08128733179881165,
+      "fpr_gap": 0.16723750738678
+    },
+    "Income (audit only)": {
+      "sensitivity_gap": 0.16301716720711135,
+      "fpr_gap": 0.270748658751077
+    },
+    "Sex": {
+      "sensitivity_gap": 0.010529372237967793,
+      "fpr_gap": 0.0571784266032187
+    }
+  },
+  "compare_5050": {
+    "file": "diabetes_binary_5050split_health_indicators_BRFSS2015.csv",
+    "true_prevalence_test": 0.13932907600126143,
+    "mean_predicted_risk_5050_model": 0.3890101906531733,
+    "mean_predicted_risk_deployed_model": 0.1395457549675316,
+    "roc_auc_5050_model": 0.8188643123542054,
+    "note": "5050 file is a resample of the same survey, so use only for the calibration point."
+  },
+  "coef_odds_ratio_per_sd": {
+    "HighBP": 1.4734033670903013,
+    "HighChol": 1.3412159276204192,
+    "BMI": 1.4986649162331083,
+    "Smoker": 1.0065905720913189,
+    "Stroke": 1.0284964874327016,
+    "HeartDiseaseorAttack": 1.0777444648074297,
+    "PhysActivity": 0.9684334942818844,
+    "Fruits": 0.978996675982458,
+    "Veggies": 0.9859222359888827,
+    "HvyAlcoholConsump": 0.8349310177771543,
+    "GenHlth": 1.8116920986486875,
+    "MentHlth": 0.985469377070373,
+    "PhysHlth": 0.939305597727889,
+    "DiffWalk": 1.0668166211025951,
+    "Sex": 1.1044468614848568,
+    "Age": 1.4854228405016157
+  },
+  "generated_at": "2026-11-06T02:37:46"
+}

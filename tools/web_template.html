@@ -1,0 +1,296 @@
+<title>Diabetes Risk Screen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap">
+<style>
+/* Layout: sticky language bar, two columns on desktop (questions left, live result right), one column on phones. */
+:root{
+  --bg:#f3f6f6; --surface:#ffffff; --ink:#10282c; --muted:#53686c; --line:#d3dfe0;
+  --accent:#0f6b73; --accent-ink:#ffffff; --accent-soft:#dff0f1;
+  --low:#2b7a3d; --mod:#b36200; --high:#b3261e; --warn-bg:#fff1dc; --warn-ink:#5a3600; --warn-line:#e08a12;
+  --up:#b3261e; --down:#0f6b73;
+  --font-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-display:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1a1c; --surface:#142629; --ink:#e6f1f2; --muted:#9db3b6; --line:#2a4549;
+  --accent:#4cc3cd; --accent-ink:#06282c; --accent-soft:#16373b;
+  --low:#6fcf85; --mod:#f0a43c; --high:#ff8a80; --warn-bg:#3a2a0e; --warn-ink:#ffd9a0; --warn-line:#e08a12;
+  --up:#ff8a80; --down:#4cc3cd; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1a1c; --surface:#142629; --ink:#e6f1f2; --muted:#9db3b6; --line:#2a4549;
+  --accent:#4cc3cd; --accent-ink:#06282c; --accent-soft:#16373b;
+  --low:#6fcf85; --mod:#f0a43c; --high:#ff8a80; --warn-bg:#3a2a0e; --warn-ink:#ffd9a0; --warn-line:#e08a12;
+  --up:#ff8a80; --down:#4cc3cd; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;margin:0;
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding:18px 0 14px}
+h1{font-family:var(--font-display);font-size:clamp(1.5rem,3.4vw,2.1rem);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:4px 0 0;max-width:60ch}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{font:inherit;border:0;background:transparent;color:var(--ink);padding:8px 14px;cursor:pointer;min-height:40px}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed="true"],.seg button[aria-checked="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.notice{border-left:6px solid var(--warn-line);background:var(--warn-bg);color:var(--warn-ink);padding:10px 14px;border-radius:6px;margin:6px 0 10px}
+.privacy{border-left:6px solid var(--accent);background:var(--accent-soft);color:var(--ink);padding:10px 14px;border-radius:6px;margin:0 0 18px}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:18px}
+.tabs button{font:inherit;font-weight:700;background:none;border:0;color:var(--muted);padding:10px 16px;cursor:pointer;border-bottom:4px solid transparent;margin-bottom:-2px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:18px 20px}
+h2{font-family:var(--font-display);font-size:1.15rem;margin:0 0 12px;letter-spacing:.01em}
+h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:22px 0 10px}
+h3:first-of-type{margin-top:0}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px 16px}
+label.f,.f-label{display:block;font-weight:700;font-size:.95rem;margin-bottom:6px}
+.q{padding:10px 0;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.q:first-of-type{border-top:0}
+.q .qt{flex:1 1 260px;min-width:0}
+input[type=number]{font:inherit;width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);min-height:44px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.rng{flex:1 1 100%}
+.rng .qt{display:flex;justify-content:space-between;gap:12px}
+.rng output{font-family:var(--font-mono);font-weight:500}
+.bmi{font-family:var(--font-mono);color:var(--muted);margin-top:8px}
+.bmi b{color:var(--ink)}
+.chip{display:inline-block;font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--accent-soft);color:var(--ink);border:1px solid var(--line)}
+.sticky{position:sticky;top:12px}
+@media(max-width:860px){.sticky{position:static}}
+.band{border-radius:10px;padding:14px 16px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:1.5rem;letter-spacing:.01em}
+.band.low{background:var(--low)}.band.mod{background:var(--mod)}.band.high{background:var(--high)}
+:root[data-theme="dark"] .band{color:#06161a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .band{color:#06161a}}
+.pct{font-family:var(--font-mono);font-size:2.4rem;font-weight:500;line-height:1.1;margin:10px 0 2px}
+.small{font-size:.88rem;color:var(--muted)}
+.fac{list-style:none;margin:6px 0 0;padding:0}
+.fac li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px solid var(--line)}
+.fac li:first-child{border-top:0}
+.fac .m{font-family:var(--font-mono);white-space:nowrap}
+.fac .m.up{color:var(--up)}.fac .m.dn{color:var(--down)}
+.bars{display:grid;gap:5px;margin-top:8px}
+.bar{display:grid;grid-template-columns:minmax(90px,38%) 1fr;gap:10px;align-items:center;font-size:.85rem}
+.bar span.n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.track{position:relative;height:14px;background:var(--bg);border-radius:3px}
+.track::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--muted);opacity:.5}
+.fill{position:absolute;top:0;bottom:0;border-radius:3px}
+.fill.up{left:50%;background:var(--up)}.fill.dn{right:50%;background:var(--down)}
+.follow{border:1.5px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin-top:16px}
+.follow .d{font-family:var(--font-mono);font-weight:500}
+.btn{font:inherit;font-weight:700;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:9px 14px;min-height:44px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.btn.alt{background:transparent;color:var(--ink);border-color:var(--line)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:10px 0 6px}
+.tile{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.tile .v{font-family:var(--font-mono);font-size:1.6rem;font-weight:500}
+.tile .l{font-size:.82rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td.num,th.num{text-align:right;font-family:var(--font-mono)}
+.scroll{overflow-x:auto;max-width:100%}
+.mbar{display:inline-block;vertical-align:middle;height:10px;border-radius:3px;background:var(--accent);margin-right:6px}
+ul.lim{padding-left:20px;margin:6px 0}
+ul.lim li{margin:4px 0}
+.mc{display:grid;gap:18px}
+footer{margin-top:28px;color:var(--muted);font-size:.85rem}
+@media(prefers-reduced-motion:no-preference){.fill{transition:width .25s ease}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 id="t-title"></h1>
+      <p class="sub" id="t-sub"></p>
+    </div>
+    <div class="seg" role="group" aria-label="Language" id="langs"></div>
+  </header>
+  <div class="notice" id="t-disc"></div>
+  <div class="privacy" id="t-priv"></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-s" aria-selected="true" aria-controls="view-s"></button>
+    <button role="tab" id="tab-m" aria-selected="false" aria-controls="view-m"></button>
+  </div>
+
+  <section id="view-s" role="tabpanel" aria-labelledby="tab-s">
+    <div class="grid">
+      <div class="panel" id="form"></div>
+      <div class="panel sticky" id="result" aria-live="polite"></div>
+    </div>
+  </section>
+  <section id="view-m" role="tabpanel" aria-labelledby="tab-m" hidden><div class="panel mc" id="mc"></div></section>
+
+  <footer>Tech Wave 2026 · Track 6 · BRFSS 2015 (CDC) · <span id="t-foot"></span></footer>
+</div>
+
+<script>
+const I18N=__I18N__, FEATNAME=__FEATNAME__, EXTRA=__EXTRA__;
+const MODEL=__MODEL__, METRICS=__METRICS__, FAIR=__FAIR__;
+const LANGS={en:"English",fr:"Français",mfe:"Kreol Morisien"};
+let lang="en", tab="s", example=true;
+const NEUTRAL={age:45,sex:0,height:168,weight:75,HighBP:0,HighChol:0,Stroke:0,HeartDiseaseorAttack:0,DiffWalk:0,GenHlth:3,
+  Smoker:0,PhysActivity:1,HvyAlcoholConsump:0,Fruits:1,Veggies:1,MentHlth:0,PhysHlth:0};
+const DEMO={...NEUTRAL,age:58,sex:1,height:172,weight:92,HighBP:1,GenHlth:4};
+let S={...DEMO};
+try{const l=localStorage.getItem("dscreen-lang"); if(l&&LANGS[l]) lang=l;}catch(e){}
+const T=()=>({...I18N[lang],...EXTRA[lang]});
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function ageCode(y){return y<25?1:Math.min(13,2+Math.floor((y-25)/5));}
+function bmiOf(){return S.weight/Math.pow(S.height/100,2);}
+function compute(){
+  const v={HighBP:S.HighBP,HighChol:S.HighChol,BMI:Math.round(bmiOf()*10)/10,Smoker:S.Smoker,Stroke:S.Stroke,
+    HeartDiseaseorAttack:S.HeartDiseaseorAttack,PhysActivity:S.PhysActivity,Fruits:S.Fruits,Veggies:S.Veggies,
+    HvyAlcoholConsump:S.HvyAlcoholConsump,GenHlth:S.GenHlth,MentHlth:S.MentHlth,PhysHlth:S.PhysHlth,
+    DiffWalk:S.DiffWalk,Sex:S.sex,Age:ageCode(S.age)};
+  let logit=MODEL.intercept; const c={};
+  MODEL.features.forEach((f,i)=>{const z=(v[f]-MODEL.mean[i])/MODEL.scale[i]; c[f]=MODEL.coef[i]*z; logit+=c[f];});
+  const p=1/(1+Math.exp(-logit));
+  return {v,c,p};
+}
+
+/* ---------- form ---------- */
+function yn(id,label){
+  const t=T();
+  return `<div class="q"><div class="qt" id="${id}-l">${esc(label)}</div>
+  <div class="seg" role="radiogroup" aria-labelledby="${id}-l">
+   <button type="button" role="radio" data-k="${id}" data-v="0" aria-checked="${S[id]==0}">${esc(t.no)}</button>
+   <button type="button" role="radio" data-k="${id}" data-v="1" aria-checked="${S[id]==1}">${esc(t.yes)}</button></div></div>`;
+}
+function rng(id,label){
+  return `<div class="q rng"><div class="qt"><label for="${id}">${esc(label)}</label><output id="${id}-o">${S[id]}</output></div>
+  <input type="range" id="${id}" min="0" max="30" value="${S[id]}" data-k="${id}"></div>`;
+}
+function buildForm(){
+  const t=T();
+  const gh=t.genh_opts.map((o,i)=>`<button type="button" role="radio" data-k="GenHlth" data-v="${i+1}" aria-checked="${S.GenHlth==i+1}">${esc(o)}</button>`).join("");
+  $("form").innerHTML=`
+  <h2>${esc(t.section_profile)} ${example?`<span class="chip">${esc(t.example)}</span>`:""}</h2>
+  <div class="row2">
+    <div><label class="f" for="age">${esc(t.age)}</label><input type="number" id="age" min="18" max="100" value="${S.age}" data-n="age"></div>
+    <div><div class="f-label" id="sex-l">${esc(t.sex)}</div><div class="seg" role="radiogroup" aria-labelledby="sex-l">
+      <button type="button" role="radio" data-k="sex" data-v="0" aria-checked="${S.sex==0}">${esc(t.female)}</button>
+      <button type="button" role="radio" data-k="sex" data-v="1" aria-checked="${S.sex==1}">${esc(t.male)}</button></div></div>
+    <div><label class="f" for="height">${esc(t.height)}</label><input type="number" id="height" min="120" max="220" value="${S.height}" data-n="height"></div>
+    <div><label class="f" for="weight">${esc(t.weight)}</label><input type="number" id="weight" min="30" max="250" step="0.5" value="${S.weight}" data-n="weight"></div>
+  </div>
+  <div class="bmi" id="bmi"></div>
+  <h3>${esc(t.section_health)}</h3>
+  ${yn("HighBP",t.HighBP)}${yn("HighChol",t.HighChol)}${yn("Stroke",t.Stroke)}${yn("HeartDiseaseorAttack",t.HeartDiseaseorAttack)}${yn("DiffWalk",t.DiffWalk)}
+  <div class="q"><div class="qt" id="gh-l">${esc(t.GenHlth)}</div><div class="seg" role="radiogroup" aria-labelledby="gh-l" style="max-width:100%;flex-wrap:wrap">${gh}</div></div>
+  <h3>${esc(t.section_life)}</h3>
+  ${yn("Smoker",t.Smoker)}${yn("PhysActivity",t.PhysActivity)}${yn("HvyAlcoholConsump",t.HvyAlcoholConsump)}${yn("Fruits",t.Fruits)}${yn("Veggies",t.Veggies)}
+  ${rng("MentHlth",t.MentHlth)}${rng("PhysHlth",t.PhysHlth)}
+  <div class="btns"><button type="button" class="btn alt" id="reset">${esc(t.reset)}</button></div>`;
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button[data-k]"); if(b){S[b.dataset.k]=Number(b.dataset.v); example=false;
+    b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-checked",String(x===b))); update(); return;}
+  if(e.target.id==="reset"){S={...NEUTRAL}; example=false; buildForm(); update();}
+});
+document.addEventListener("input",e=>{
+  const el=e.target; if(!el.dataset) return;
+  if(el.dataset.n){const x=parseFloat(el.value); if(!isNaN(x)){S[el.dataset.n]=Math.min(+el.max,Math.max(+el.min,x)); example=false; update();}}
+  if(el.type==="range"){S[el.dataset.k]=Number(el.value); $(el.id+"-o").textContent=el.value; example=false; update();}
+});
+
+/* ---------- result ---------- */
+function fmtVal(f,v,t){
+  if(f==="BMI") return v.toFixed(1);
+  if(f==="Age") return String(S.age);
+  if(f==="GenHlth") return t.genh_opts[v-1];
+  if(f==="Sex") return v?t.male:t.female;
+  if(f==="MentHlth"||f==="PhysHlth") return String(v);
+  return v?t.yes:t.no;
+}
+function update(){
+  const t=T(), {v,c,p}=compute(), N=FEATNAME[lang];
+  $("bmi").innerHTML=`${esc(t.bmi)}: <b>${bmiOf().toFixed(1)}</b>`;
+  const th=MODEL.threshold_screen, hi=MODEL.threshold_high;
+  let cls="low",band=t.band_low,fk="follow_low",mo=36;
+  if(p>=hi){cls="high";band=t.band_high;fk="follow_high";mo=1}
+  else if(p>=th){cls="mod";band=t.band_mod;fk="follow_mod";mo=12}
+  const ranked=Object.entries(c).sort((a,b)=>b[1]-a[1]);
+  const ups=ranked.filter(x=>x[1]>0.02).slice(0,4), downs=ranked.filter(x=>x[1]<-0.02).reverse().slice(0,4);
+  const li=([f,x])=>`<li><span>${esc(N[f])} <span class="small">(${esc(fmtVal(f,v[f],t))})</span></span><span class="m ${x>0?"up":"dn"}">×${Math.exp(x).toFixed(2)}</span></li>`;
+  const maxAbs=Math.max(...Object.values(c).map(Math.abs),0.01);
+  const bars=Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([f,x])=>
+    `<div class="bar"><span class="n">${esc(N[f])}</span><div class="track"><div class="fill ${x>=0?"up":"dn"}" style="width:${(Math.abs(x)/maxAbs*50).toFixed(1)}%"></div></div></div>`).join("");
+  const due=new Date(); due.setDate(due.getDate()+Math.round(30.4*mo));
+  const loc={en:"en-GB",fr:"fr-FR",mfe:"fr-FR"}[lang];
+  const dueTxt=due.toLocaleDateString(loc,{day:"numeric",month:"long",year:"numeric"});
+  const ymd=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
+  const nxt=new Date(due); nxt.setDate(nxt.getDate()+1);
+  const gcal="https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(t.ics_title)+
+    "&details="+encodeURIComponent(t.ics_desc)+"&dates="+ymd(due)+"/"+ymd(nxt);
+  const reminder=`${t.ics_title}: ${dueTxt}. ${t[fk]} ${t.ics_desc}`;
+  $("result").innerHTML=`
+  <h2>${esc(t.result)}</h2>
+  <div class="band ${cls}">${esc(band)}</div>
+  <div class="pct">${(p*100).toFixed(1)} %</div>
+  <div class="small">${esc(t.risk_est)}</div>
+  <div class="small" style="margin-top:6px">${esc(t.risk_note)}</div>
+  <h3 style="margin-top:20px">⬆ ${esc(t.factors_up)}</h3>
+  <div class="small">${esc(t.vs_avg)}</div>
+  <ul class="fac">${ups.map(li).join("")||`<li>${esc(t.none)}</li>`}</ul>
+  <h3>⬇ ${esc(t.factors_down)}</h3>
+  <ul class="fac">${downs.map(li).join("")||`<li>${esc(t.none)}</li>`}</ul>
+  <h3>${esc(t.chart_title)}</h3>
+  <div class="bars" role="img" aria-label="${esc(t.chart_title)}">${bars}</div>
+  <div class="follow"><b>${esc(t.follow)}</b><br>${esc(t[fk])}<br>${esc(t.follow_date)}: <span class="d">${esc(dueTxt)}</span>
+    <div class="small" style="margin-top:4px">${esc(t.follow_basis)}</div>
+    <div class="btns"><a class="btn" href="${gcal}" target="_blank" rel="noopener">${esc(t.gcal)}</a>
+    <button type="button" class="btn alt" id="copy">${esc(t.copy)}</button></div>
+    <div class="small" id="copied" role="status"></div></div>`;
+  $("copy").onclick=()=>{
+    const done=()=>{$("copied").textContent=t.copied};
+    try{navigator.clipboard.writeText(reminder).then(done,()=>fallback())}catch(e){fallback()}
+    function fallback(){const ta=document.createElement("textarea");ta.value=reminder;document.body.appendChild(ta);ta.select();
+      try{document.execCommand("copy");done()}catch(e){$("copied").textContent=reminder}ta.remove()}
+  };
+}
+
+/* ---------- model card ---------- */
+function buildCard(){
+  const t=T(), d=METRICS.deployed_test, sp=METRICS.split;
+  const pct=x=>Math.round(x*100)+"%";
+  const tiles=[["ROC-AUC",d.roc_auc.toFixed(3)],["PR-AUC",d.pr_auc.toFixed(3)],[t.sens,pct(d.sensitivity)],[t.spec,pct(d.specificity)],["NPV",pct(d.npv)],["PPV",pct(d.ppv)]]
+    .map(([l,x])=>`<div class="tile"><div class="v">${x}</div><div class="l">${esc(l)}</div></div>`).join("");
+  const bench=Object.entries(METRICS.benchmarks).map(([k,x])=>`<tr><td>${esc(k)}</td><td class="num">${x.roc_auc.toFixed(3)}</td><td class="num">${x.pr_auc.toFixed(3)}</td><td class="num">${x.brier.toFixed(3)}</td></tr>`).join("");
+  const fair=FAIR.map(r=>`<tr><td>${esc(r.attribute.replace(" (audit only)",""))}</td><td>${esc(r.group)}</td><td class="num">${r.n.toLocaleString("en")}</td>
+    <td class="num">${pct(r.prevalence)}</td><td class="num"><span class="mbar" style="width:${Math.round(r.sensitivity*70)}px"></span>${pct(r.sensitivity)}</td>
+    <td class="num">${pct(r.false_positive_rate)}</td></tr>`).join("");
+  $("mc").innerHTML=`
+  <div><h2>${esc(t.tab_model)}</h2><div class="small">${esc(t.mc_intro)}</div></div>
+  <div><h3>${esc(t.mc_data)}</h3>BRFSS 2015 (CDC) · ${METRICS.n_rows.toLocaleString("en")} · ${esc(t.prev)} ${(METRICS.prevalence*100).toFixed(1)}% · train/val/test ${sp.train.toLocaleString("en")} / ${sp.val.toLocaleString("en")} / ${sp.test.toLocaleString("en")}</div>
+  <div><h3>${esc(t.mc_perf)}</h3><div class="tiles">${tiles}</div></div>
+  <div><h3>${esc(t.mc_bench)}</h3><div class="scroll"><table><thead><tr><th></th><th class="num">ROC-AUC</th><th class="num">PR-AUC</th><th class="num">Brier</th></tr></thead><tbody>${bench}</tbody></table></div></div>
+  <div><h3>${esc(t.mc_fair)}</h3><div class="small" style="margin-bottom:8px">${esc(t.mc_fair_note)}</div>
+   <div class="scroll"><table><thead><tr><th></th><th></th><th class="num">n</th><th class="num">${esc(t.prev)}</th><th class="num">${esc(t.sens)}</th><th class="num">${esc(t.fpr)}</th></tr></thead><tbody>${fair}</tbody></table></div></div>
+  <div><h3>${esc(t.mc_limits)}</h3><ul class="lim">${t.mc_limits_list.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+}
+
+/* ---------- chrome ---------- */
+function chrome(){
+  const t=T();
+  document.documentElement.lang=lang==="mfe"?"mfe":lang;
+  $("t-title").textContent="🩺 "+t.title; $("t-sub").textContent=t.subtitle;
+  $("t-disc").textContent=t.disclaimer; $("t-priv").textContent=t.privacy.replace("🔒 ","🔒 ");
+  $("t-foot").textContent=t.footer;
+  $("tab-s").textContent=t.tab_screen; $("tab-m").textContent=t.tab_model;
+  $("langs").innerHTML=Object.entries(LANGS).map(([k,n])=>`<button type="button" data-lang="${k}" aria-pressed="${k===lang}">${n}</button>`).join("");
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button[data-lang]"); if(b){lang=b.dataset.lang; try{localStorage.setItem("dscreen-lang",lang)}catch(_){} full();}
+  if(e.target.id==="tab-s"||e.target.id==="tab-m"){tab=e.target.id==="tab-s"?"s":"m";
+    $("tab-s").setAttribute("aria-selected",tab==="s");$("tab-m").setAttribute("aria-selected",tab==="m");
+    $("view-s").hidden=tab!=="s";$("view-m").hidden=tab!=="m";}
+});
+function full(){chrome();buildForm();update();buildCard();}
+full();
+</script>
