@@ -23,8 +23,14 @@ def main():
     original = subprocess.check_output(['git', 'show', 'HEAD:web/index.html'], cwd=ROOT).decode('utf-8')
     current = (ROOT / 'web/index.html').read_text(encoding='utf-8')
     script = lambda html: re.findall(r'<script>(.*?)</script>', html, re.S)[0]
-    assert script(original) == script(current), 'Application JavaScript changed'
-    assert re.findall(r'<style>(.*?)</style>', original, re.S) == re.findall(r'<style>(.*?)</style>', current, re.S)
+    for name, end in [('compute', '/* ---------- form'), ('update', '/* ---------- chrome')]:
+        if name == 'compute':
+            extract=lambda text: re.search(r'function compute\(\)\{(.*?)\n\}', text, re.S).group(1)
+        else:
+            extract=lambda text: re.search(r'function update\(\)\{(.*?)\n\}', text, re.S).group(1)
+        assert extract(original)==extract(current), name+' changed'
+    assert 'const MODEL=' in current and 'const MODEL=' in original
+    assert 'METRICS=' not in current and 'FAIR=' not in current and 'id="mc"' not in current
     manifest = json.loads((ROOT / 'web/manifest.webmanifest').read_text())
     worker_override = []
     assert manifest['display'] == 'standalone'
@@ -68,6 +74,13 @@ def main():
             context.on('page', lambda page: page.on('pageerror', lambda error: errors.append(str(error))))
             baseline = context.new_page()
             baseline.goto(origin + '/baseline.html')
+            admin = context.new_page()
+            admin.goto((ROOT / 'admin-web/index.html').as_uri())
+            for language in ['en', 'fr', 'mfe']:
+                expected=baseline.evaluate('(language)=>{lang=language;buildCard();return $("mc").innerHTML}',language)
+                admin.select_option('#language',language)
+                assert admin.locator('#mc').inner_html()==expected
+            assert admin.evaluate('navigator.serviceWorker.controller') is None
             page = context.new_page()
             page.goto(origin + '/')
             page.evaluate('navigator.serviceWorker.ready')
@@ -76,9 +89,7 @@ def main():
             assert registration['state'] == 'activated'
             for language in ['en', 'fr', 'mfe']:
                 for state in [dict(age=20, weight=50, HighBP=0, GenHlth=1), dict(age=58, weight=92, HighBP=1, GenHlth=4), dict(age=80, weight=140, HighBP=1, GenHlth=5, HighChol=1, DiffWalk=1)]:
-                    expression = '(arg) => {lang=arg.language; S={...DEMO,...arg.state};full(); return {score:compute(),form:$("form").innerHTML,result:$("result").innerHTML,card:$("mc").innerHTML}}'
-                    # Compare the entire rendered application, including follow-up and explanations.
-                    expression = expression.replace('$("form").innerHTML', '$("view-s").innerHTML').replace('result:$("result").innerHTML,', '')
+                    expression = '(arg) => {lang=arg.language; S={...DEMO,...arg.state};full(); return {score:compute(),result:$("result").innerHTML}}'
                     args = dict(language=language, state=state)
                     assert baseline.evaluate(expression, args) == page.evaluate(expression, args)
             session = context.new_cdp_session(page)
@@ -92,18 +103,37 @@ def main():
                 page.click(f'[data-lang="{language}"]')
                 assert page.evaluate('MODEL.features.length') == 16
                 assert page.evaluate('Number.isFinite(compute().p)')
-                page.click('#tab-m')
-                assert page.locator('#mc table').count() == 2
-                page.click('#tab-s')
+                assert page.locator('#report').is_hidden()
+                assert page.locator('.journey-question:visible').count() == 1
             # The existing web app has copy/Google Calendar, not the Streamlit ICS export.
+            # Complete all steps through real controls, preserving answers when going Back.
+            page.fill('#age','62'); page.click('#next')
+            page.click('#next')
+            assert page.locator('#step-error').inner_text()
+            page.click('[data-k="sex"][data-v="1"]'); page.click('#next')
+            page.fill('#height','170');page.fill('#weight','85');page.click('#next')
+            for index in range(3,16):
+                radios=page.locator('.journey-question:visible [role="radio"]')
+                if radios.count(): radios.first.click()
+                page.click('#next')
+            assert page.locator('#report').is_visible()
+            assert page.locator('#journey').is_hidden()
             assert page.locator('#copy').count() == 1
+            page.click('#edit');page.click('#previous')
+            assert page.locator('.journey-question:visible').count()==1
+            page.click('#next');page.click('#next')
+            page.click('#reset');assert page.locator('#report').is_hidden()
+            assert page.input_value('#age')==''
+            page.set_viewport_size({'width':390,'height':844})
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+
             assert page.locator('a[href^="https://calendar.google.com/"]').count() == 1
             page.goto(origin + '/standalone.html')
             assert page.evaluate('MODEL.features.length') == 16
             keys = page.evaluate('caches.keys()')
             assert len([key for key in keys if key.startswith('diabetes-screen-')]) == 1
             urls = page.evaluate('async () => (await (await caches.open((await caches.keys())[0])).keys()).map(r=>r.url)')
-            assert all('calendar.google' not in url for url in urls)
+            assert all('calendar.google' not in url and 'admin' not in url for url in urls)
             context.set_offline(False)
             standalone = context.new_page()
             standalone.goto((ROOT / 'web/standalone.html').as_uri())
@@ -119,7 +149,7 @@ def main():
             page.wait_for_function('caches.keys().then(keys => keys.some(k => k.endsWith("-update")) && keys.filter(k => k.startsWith("diabetes-screen-")).length === 1)')
             assert not errors, errors
             browser.close()
-            print('PASS: unchanged application JS/CSS; manifest/icons; Chromium installability; registration; 9 baseline comparisons; offline languages/model card/reminder controls/both pages; file standalone; deployment update and old cache removal; no page errors.')
+            print('PASS: unchanged compute/report logic; manifest/icons; Chromium installability; registration; 9 baseline comparisons; offline languages/wizard/reminder controls/both pages; file standalone; deployment update and old cache removal; no page errors.')
     finally:
         server.shutdown()
 
