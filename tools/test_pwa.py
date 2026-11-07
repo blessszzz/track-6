@@ -82,7 +82,13 @@ def main():
         def log_message(self, *_):
             pass
 
-    server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), functools.partial(Handler, directory=str(ROOT / 'web')))
+    class Server(http.server.ThreadingHTTPServer):
+        def handle_error(self,request,client_address):
+            if isinstance(sys.exc_info()[1],(ConnectionAbortedError,ConnectionResetError,BrokenPipeError)):
+                return  # Browser navigation/auto-update cancelled an in-flight response.
+            super().handle_error(request,client_address)
+
+    server = Server(('127.0.0.1', 0), functools.partial(Handler, directory=str(ROOT / 'web')))
     threading.Thread(target=server.serve_forever, daemon=True).start()
     origin = f'http://localhost:{server.server_port}'
     try:
@@ -127,7 +133,8 @@ def main():
             page.evaluate('document.getElementById("reset").click()')
             page.click('[data-language-choice="en"]')
             page.evaluate('''() => {
-              window.testSpoken=[];
+              window.testSpoken=[];window.testMicRequests=0;window.testMicStops=0;
+              navigator.mediaDevices.getUserMedia=async()=>{testMicRequests++;return {getTracks:()=>[{stop(){testMicStops++;}}]};};
               window.SpeechSynthesisUtterance=class {constructor(text){this.text=text;}};
               Object.defineProperty(window,'speechSynthesis',{value:{
                 getVoices:()=>['en-GB','fr-FR','mfe-MU'].map(lang=>({lang,localService:true})),
@@ -141,6 +148,9 @@ def main():
             page.evaluate('greetings()')
             assert page.evaluate('testSpoken.map(item=>item.lang)')==['en-GB','fr-FR','mfe-MU']
             page.click('#choose-voice')
+            page.wait_for_function('voiceMode')
+            assert page.evaluate('testMicRequests')==1 and page.evaluate('testMicStops')==1
+            assert page.locator('#speech-consent').count()==0
             page.click('#listen')
             assert page.evaluate('testRecognition.processLocally')
             page.evaluate('testRecognition.onresult({results:[Object.assign([{transcript:"sixty"}],{isFinal:false})]})')
@@ -154,13 +164,32 @@ def main():
             page.evaluate('testRecognition.onresult({results:[Object.assign([{transcript:"male"}],{isFinal:true})]})')
             page.click('#confirm-voice')
             assert page.evaluate('step')==2
-            page.check('#speech-consent');page.click('#listen')
+            page.evaluate('() => {window.SpeechRecognition=class {constructor(){window.testRecognition=this;}start(){}abort(){}};}')
+            page.click('#mode-voice');page.click('#allow-browser-speech');page.click('#listen')
             assert not page.evaluate('testRecognition.processLocally')
             page.evaluate('testRecognition.onresult({results:[Object.assign([{transcript:"999 85"}],{isFinal:true})]})')
             page.click('#confirm-voice');assert page.evaluate('step')==2
-            page.fill('#voice-transcript','170 85');page.click('#confirm-voice')
+            page.set_viewport_size({'width':390,'height':844})
+            assert page.evaluate('document.getElementById("confirm-voice").getBoundingClientRect().bottom <= innerHeight')
+            assert page.evaluate('document.querySelector(".journey-question:not([hidden])").getBoundingClientRect().top >= 0')
+            page.screenshot(path=str(preview/'voice-mobile.png'),full_page=True)
+            page.fill('#voice-transcript','85');page.click('#confirm-voice')
             assert page.evaluate('step')==3 and page.evaluate('S.weight')==85
-            page.click('#use-text');assert page.locator('#voice-controls').is_hidden()
+            assert page.locator('.journey-question:visible #height').count()==1
+            page.click('#listen');page.evaluate('testRecognition.onresult({results:[Object.assign([{transcript:"170"}],{isFinal:true})]})')
+            page.click('#confirm-voice');assert page.evaluate('step')==4 and page.evaluate('S.height')==170
+            for language in ['en','fr']:
+                page.evaluate('(language)=>{step=9;lang=language;full();}',language)
+                assert page.evaluate('document.getElementById("confirm-voice").getBoundingClientRect().bottom <= innerHeight')
+                assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+            page.screenshot(path=str(preview/'voice-general-health-mobile.png'),full_page=True)
+            page.evaluate('step=4;lang="en";full()')
+            page.click('#mode-text');assert page.locator('#voice-controls').is_hidden()
+            page.evaluate('() => {navigator.mediaDevices.getUserMedia=async()=>{throw new DOMException("Denied","NotAllowedError");};}')
+            page.click('#mode-voice')
+            page.wait_for_function('document.getElementById("mode-feedback").textContent.includes("denied")')
+            assert not page.evaluate('voiceMode') and page.evaluate('S.height')==170
+            page.set_viewport_size({'width':1280,'height':900})
             page.evaluate('document.getElementById("reset").click()')
             session = context.new_cdp_session(page)
             info = session.send('Page.getAppManifest')
@@ -183,8 +212,9 @@ def main():
             # Complete all steps through real controls, preserving answers when going Back.
             page.fill('#age','62');page.wait_for_function('step===1')
             page.click('[data-k="sex"][data-v="1"]');page.wait_for_function('step===2')
-            page.fill('#height','170');page.fill('#weight','85');page.wait_for_function('step===3')
-            for index in range(3,16):
+            page.fill('#weight','85');page.wait_for_function('step===3')
+            page.fill('#height','170');page.wait_for_function('step===4')
+            for index in range(4,17):
                 radios=page.locator('.journey-question:visible [role="radio"]')
                 if radios.count(): radios.first.click()
                 else: page.locator('.journey-question:visible [data-zero]').click()
@@ -205,16 +235,17 @@ def main():
                 assert len(entries)==int(xref[1])
                 for number,entry in enumerate(entries[1:],1):
                     offset=int(entry[:10]);assert pdf[offset:].startswith(f'{number} 0 obj'.encode())
-                for image in re.finditer(rb'/Subtype /Image[^\n]+/Length (\d+) >>\nstream\n',pdf):
+                for image_index,image in enumerate(re.finditer(rb'/Subtype /Image[^\n]+/Length (\d+) >>\nstream\n',pdf)):
                     with Image.open(io.BytesIO(pdf[image.end():image.end()+int(image[1])])) as bitmap:
                         assert bitmap.size==(1240,1754)
+                        if image_index==0 and language=='fr':bitmap.save(preview/'pdf-report.png')
                 assert page.evaluate('reportLines().some(line=>line.includes(T().disclaimer))')
             preview=ROOT/'tools/.pwa-preview';preview.mkdir(exist_ok=True)
             page.screenshot(path=str(preview/'report.png'),full_page=True)
             page.click('#edit');page.click('#previous')
             assert page.locator('.journey-question:visible').count()==1
             page.locator('.journey-question:visible [data-zero]').click()
-            page.wait_for_function('step===15')
+            page.wait_for_function('step===16')
             page.locator('.journey-question:visible [data-zero]').click()
             page.wait_for_function('complete')
             page.click('#finish-session')
