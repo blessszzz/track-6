@@ -133,9 +133,6 @@ button:disabled{opacity:.5;cursor:default}
     </div>
     <div class="seg" role="group" aria-label="Language" id="langs"></div>
   </header>
-  <details class="about"><summary id="about-label"></summary>
-    <div class="notice" id="t-disc"></div><div class="privacy" id="t-priv"></div>
-  </details>
   <section id="view-s">
     <div class="panel" id="journey">
       <div id="progress-label" role="status"></div>
@@ -287,7 +284,6 @@ function chrome(){
   const t=T();
   document.documentElement.lang=lang==="mfe"?"mfe":lang;
   $("t-title").textContent="🩺 "+t.title; $("t-sub").textContent=t.subtitle;
-  $("t-disc").textContent=t.disclaimer; $("t-priv").textContent=t.privacy.replace("🔒 ","🔒 ");
   $("t-foot").textContent=t.footer;
 
   $("langs").innerHTML=Object.entries(LANGS).map(([k,n])=>`<button type="button" data-lang="${k}" aria-pressed="${k===lang}">${n}</button>`).join("");
@@ -297,6 +293,7 @@ document.addEventListener("click",e=>{
 });
 function full(){chrome();buildForm();update();renderJourney();}
 full();
+__VOICE_CODE__
 </script>
 <script>
 // File-based standalone use remains supported; installation needs HTTPS/localhost.
