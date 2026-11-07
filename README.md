@@ -37,6 +37,16 @@ Run `python tools/build_web.py` after app changes; it rebuilds both HTML pages a
 
 Developer verification: `python tools/test_pwa.py` requires Playwright, its Chromium browser, and Pillow in the test environment (not app dependencies). It compares the web app against the Git HEAD version and checks installation prerequisites, offline behavior, and cache updates. The checked-in icons can optionally be regenerated with `python tools/generate_pwa_icons.py` (Pillow), then rebuild the web app.
 
+## Screening flow and administrator deployment
+
+The patient app shows one question at a time, with Back/Next controls, progress, and a report with reminder actions only after the final question. Height and weight share the BMI question. Answers stay in memory and are cleared with New patient. The prototype/privacy notices are available under About this screening; the report also repeats the original prototype warning. Transitions respect reduced-motion preferences.
+
+`python tools/build_web.py` also generates **`admin-web/`**, a separate model-card site. Publish only **`web/`** to the public patient project. Never upload the repository root or put `admin-web/` inside `web/`. The public app does not include the performance/fairness datasets, model-card tab, or administrator site in its offline cache. The scoring model necessarily remains available in the offline patient app.
+
+For real administrator sign-in, create a separate Netlify project with **Private** visibility **before uploading `admin-web/`**. In **Project configuration → General → Visitor access → Project visibility**, choose **Private** and apply it to **Production and previews**. Invite authorized team members through Netlify; they use their own Netlify credentials. Older Netlify plans may label this **Password Protection → Team login → All deploys**. Availability and team membership limits depend on your Netlify plan. See [Netlify access protection](https://docs.netlify.com/manage/security/secure-access-to-sites/password-protection/).
+
+Only after protection is enabled, deploy the complete `admin-web/` directory to that separate project. Check its production URL and deploy-specific URLs in a signed-out/private browser: they must require sign-in and must not serve the model card anonymously. The admin output has no service worker and uses `Cache-Control: no-store`. No credentials are embedded in source files. Hosting-level protection must be configured in Netlify; generating the folder does not enable it. Previously public deployments and their cached copies cannot be made confidential by this change.
+
 ## Data
 Public CDC **BRFSS 2015** survey indicators (Kaggle: "Diabetes Health Indicators Dataset"). Place these in `data/`:
 
