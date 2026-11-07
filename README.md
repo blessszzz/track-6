@@ -13,7 +13,7 @@ An explainable diabetes / prediabetes risk model and a trilingual (English, Fran
 ## Try it
 - **Live demo:** [techwave-track-6.netlify.app](https://techwave-track-6.netlify.app/)
 - **No install:** open `web/standalone.html` in any browser. It is the same model, the same three languages, one file, works offline.
-- **2-minute video:** `<PASTE YOUR VIDEO LINK HERE>`
+- **2-minute video:** [YouTube Link](https://youtu.be/8aNG-ubgTMw)
 
 ## Quick start
 ```bash
