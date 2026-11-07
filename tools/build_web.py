@@ -5,6 +5,7 @@ Embeds models/model.json, reports/metrics.json and reports/fairness.csv so the n
 always match the trained model.    python tools/build_web.py
 """
 import json
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -49,17 +50,22 @@ def main():
     model = json.loads((ROOT / "models" / "model.json").read_text())
     metrics = json.loads((ROOT / "reports" / "metrics.json").read_text())
     fair = pd.read_csv(ROOT / "reports" / "fairness.csv").round(4).to_dict("records")
-    html = (ROOT / "tools" / "web_template.html").read_text()
+    html = (ROOT / "tools" / "web_template.html").read_text(encoding="utf-8")
     dump = lambda o: json.dumps(o, ensure_ascii=False)
     html = (html.replace("__I18N__", dump(T)).replace("__FEATNAME__", dump(FEATNAME)).replace("__EXTRA__", dump(EXTRA))
             .replace("__MODEL__", dump(model)).replace("__METRICS__", dump(metrics)).replace("__FAIR__", dump(fair)))
     assert not re.search(r"__[A-Z0-9]+__", html), "unreplaced placeholder"
     out = ROOT / "web"
     out.mkdir(exist_ok=True)
-    (out / "index.html").write_text(html)
+    (out / "index.html").write_text(html, encoding="utf-8")
     wrap = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
             "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"></head><body>" + html + "</body></html>")
-    (out / "standalone.html").write_text(wrap)
+    (out / "standalone.html").write_text(wrap, encoding="utf-8")
+    worker = (ROOT / "tools" / "sw_template.js").read_text(encoding="utf-8")
+    digest = hashlib.sha256(worker.encode("utf-8"))
+    for asset in [out / "index.html", out / "standalone.html", out / "manifest.webmanifest", *sorted((out / "icons").glob("*.png"))]:
+        digest.update(asset.read_bytes())
+    (out / "sw.js").write_text(worker.replace("__VERSION__", digest.hexdigest()[:16]), encoding="utf-8")
     print("wrote", out / "index.html", "and standalone.html", f"({len(html) / 1024:.0f} KB)")
 
 

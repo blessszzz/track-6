@@ -25,6 +25,18 @@ python tools/build_web.py                    # rebuilds web/standalone.html from
 python tools/make_submission.py --team "Your Team" --members "A, B, C"   # deck + ethics note
 ```
 
+## PWA Installation and Offline Use
+
+On the HTTPS live demo, use **Install app** / **Add to Home screen** in Android Chrome. On iPhone or iPad, open in Safari and choose **Share → Add to Home Screen** (enable Open as Web App if offered). On desktop Chrome or Edge, use the address-bar install icon or browser menu; on supported macOS Safari versions, use **File → Add to Dock**. Options vary by browser and OS.
+
+Load the app online and leave it open while the service worker caches both pages and their assets. After caching completes, the installed app can launch offline: questions, scores, explanations, all three languages, model card, and reminder copying remain available. Google Calendar needs internet; clipboard support depends on the browser. The existing `.ics` export belongs to the Streamlit app; the web app has no `.ics` download control. Fonts are cached when reachable; otherwise the existing system-font fallbacks apply. Only public static files are cached, never completed questionnaires or results. Existing language preference storage is unchanged.
+
+To test locally, run `python -m http.server 8000 --directory web`, open `http://localhost:8000/`, and check DevTools **Application → Manifest / Service Workers / Cache Storage**. Wait for the worker to activate, then switch the browser offline and reload. Service workers require HTTPS or localhost. Directly opening `web/standalone.html` still works without installation.
+
+Run `python tools/build_web.py` after app changes; it rebuilds both HTML pages and generates a content-versioned `web/sw.js`. Publish the entire `web/` directory to Netlify, including the manifest, worker, and `icons/` directory. No new server or API configuration is needed. After an update downloads, close all app tabs/windows and reopen to activate the new cache safely. Keep the worker served as JavaScript without redirects or immutable caching.
+
+Developer verification: `python tools/test_pwa.py` requires Playwright, its Chromium browser, and Pillow in the test environment (not app dependencies). It compares the web app against the Git HEAD version and checks installation prerequisites, offline behavior, and cache updates. The checked-in icons can optionally be regenerated with `python tools/generate_pwa_icons.py` (Pillow), then rebuild the web app.
+
 ## Data
 Public CDC **BRFSS 2015** survey indicators (Kaggle: "Diabetes Health Indicators Dataset"). Place these in `data/`:
 

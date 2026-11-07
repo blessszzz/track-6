@@ -1,4 +1,12 @@
 <title>Diabetes Risk Screen</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f6b73">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Diabetes Screening">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -293,4 +301,13 @@ document.addEventListener("click",e=>{
 });
 function full(){chrome();buildForm();update();buildCard();}
 full();
+</script>
+<script>
+// File-based standalone use remains supported; installation needs HTTPS/localhost.
+if (location.protocol !== "file:" && "serviceWorker" in navigator && window.isSecureContext) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", {updateViaCache: "none"})
+      .catch(error => console.warn("Offline installation unavailable:", error));
+  });
+}
 </script>
