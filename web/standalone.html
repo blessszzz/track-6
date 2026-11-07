@@ -166,7 +166,7 @@ body[data-stage="splash"] #welcome{position:fixed;inset:0;max-width:none;z-index
     </div>
   </section>
 
-  <footer>Tech Wave 2026 · Track 6 · BRFSS 2015 (CDC) · <span id="t-foot"></span><div class="small">Version <span id="app-version">5a8508ea154b4bd6</span> &middot; <button type="button" class="btn alt" id="check-updates">Check for updates</button> <span id="update-status" role="status"></span></div></footer>
+  <footer>Tech Wave 2026 · Track 6 · Prototype · #VITMU<div class="small">Version <span id="app-version">ed5a7dd0a1d369cc</span> &middot; <button type="button" class="btn alt" id="check-updates">Check for updates</button> <span id="update-status" role="status"></span></div></footer>
 </div>
 
 <script>
@@ -393,7 +393,6 @@ function chrome(){
   const t=T();
   document.documentElement.lang=lang==="mfe"?"mfe":lang;
   $("t-title").textContent="🩺 "+t.title; $("t-sub").textContent=t.subtitle;
-  $("t-foot").textContent=t.footer;
 
   $("langs").innerHTML=Object.entries(LANGS).map(([k,n])=>`<button type="button" data-lang="${k}" aria-pressed="${k===lang}">${n}</button>`).join("");
 }
@@ -642,7 +641,7 @@ updateReportActions();
 </script>
 <script>
 /* Public release metadata only. Never reload a screening/report in progress. */
-const APP_VERSION='5a8508ea154b4bd6';
+const APP_VERSION='ed5a7dd0a1d369cc';
 if(location.protocol!=='file:'&&'serviceWorker' in navigator&&window.isSecureContext){
   let registration,checking=false,reloading=false,pending=false,knownVersion;
   let hadController=!!navigator.serviceWorker.controller;
