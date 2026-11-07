@@ -2,6 +2,15 @@
 let step=0, complete=false;
 const answered=new Set();
 const numericDraft=new Map();
+let advanceTimer;
+function queueAdvance(delay=450){
+  clearTimeout(advanceTimer);
+  const expectedStep=step;
+  advanceTimer=setTimeout(()=>{
+    const current=document.querySelector('.journey-question:not([hidden])');
+    if(step===expectedStep&&!complete&&current&&[...current.querySelectorAll('input')].every(input=>input.checkValidity()))$('next').click();
+  },delay);
+}
 const FLOW={
  en:{about:"About this screening",step:"Question",of:"of",back:"Back",next:"Next",finish:"View my report",edit:"Review my answers",error:"Please answer this question before continuing."},
  fr:{about:"À propos de ce dépistage",step:"Question",of:"sur",back:"Retour",next:"Suivant",finish:"Voir mon rapport",edit:"Revoir mes réponses",error:"Veuillez répondre à cette question avant de continuer."},
@@ -18,6 +27,10 @@ function buildForm(){
   questions.forEach((node,index)=>{
     const section=document.createElement('div');section.className='journey-question';section.dataset.step=index;
     section.append(node);form.append(section);
+    if(section.querySelector('input[type=range]')){
+      const zero=document.createElement('button');zero.type='button';zero.className='btn alt';zero.dataset.zero='true';zero.textContent='0';
+      zero.setAttribute('aria-label',`${section.querySelector('label').textContent}: 0`);section.append(zero);
+    }
     section.querySelectorAll('input[type=number]').forEach(input=>{
       input.required=true;
       if(numericDraft.has(input.id))input.value=numericDraft.get(input.id);
@@ -29,6 +42,7 @@ function buildForm(){
   });
 }
 function renderJourney(focus=false){
+  clearTimeout(advanceTimer);
   const f=FLOW[lang];
 
   $("journey").hidden=complete;$("report").hidden=!complete;
@@ -50,7 +64,8 @@ function renderJourney(focus=false){
 }
 document.addEventListener('click',event=>{
   const button=event.target.closest('button');if(!button)return;
-  if(button.matches('#form [data-k]'))answered.add(step);
+  if(button.matches('#form [data-k]')){answered.add(step);queueAdvance();}
+  if(button.dataset.zero){const input=button.closest('.journey-question').querySelector('input');input.value=0;input.dispatchEvent(new Event('input',{bubbles:true}));queueAdvance();}
   if(button.id==='previous'){step=Math.max(0,step-1);renderJourney(true);}
   if(button.id==='edit'){complete=false;renderJourney(true);}
   if(button.id==='next'){
@@ -68,5 +83,8 @@ document.addEventListener('input',event=>{
     if(event.target.type==='number')numericDraft.set(event.target.id,event.target.value);
     const current=event.target.closest('.journey-question');
     if(current && [...current.querySelectorAll('input[type=number]')].every(input=>input.checkValidity()))answered.add(step);
+    if(event.target.type==='number')queueAdvance(1800);
   }
 });
+document.addEventListener('change',event=>{if(event.target.matches('#form input[type=range]'))queueAdvance(700);});
+document.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.matches('#form input')){event.preventDefault();$('next').click();}});

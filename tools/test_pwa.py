@@ -3,6 +3,7 @@
 Run: python tools/test_pwa.py (uses an installed Playwright Chromium browser).
 """
 import functools
+import io
 import http.server
 import json
 import os
@@ -33,7 +34,13 @@ def main():
     assert 'const MODEL=' in current and 'const MODEL=' in original
     assert 'METRICS=' not in current and 'FAIR=' not in current and 'id="mc"' not in current
     manifest = json.loads((ROOT / 'web/manifest.webmanifest').read_text())
+    release=json.loads((ROOT / 'web/version.json').read_text())['version']
+    assert f"const APP_VERSION='{release}'" in current
+    assert f"diabetes-screen-{release}" in (ROOT/'web/sw.js').read_text()
     worker_override = []
+    release_override = []
+    page_override = []
+    fail_shell = [False]
     assert manifest['display'] == 'standalone'
     for icon in manifest['icons']:
         with Image.open(ROOT / 'web' / icon['src']) as image:
@@ -41,6 +48,21 @@ def main():
 
     class Handler(http.server.SimpleHTTPRequestHandler):
         def do_GET(self):
+            if self.path == '/index.html' and fail_shell[0]:
+                self.send_error(503,'Simulated incomplete deployment')
+                return
+            if self.path == '/version.json' and release_override:
+                self.send_response(200)
+                self.send_header('Content-Type','application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'version':release_override[0]}).encode())
+                return
+            if self.path in ['/', '/index.html', '/standalone.html'] and page_override:
+                self.send_response(200)
+                self.send_header('Content-Type','text/html; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(page_override[0].encode('utf-8'))
+                return
             if self.path == '/sw.js' and worker_override:
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/javascript')
@@ -86,6 +108,11 @@ def main():
             assert admin.evaluate('navigator.serviceWorker.controller') is None
             page = context.new_page()
             page.goto(origin + '/')
+            assert page.evaluate('lang')=='en'
+            assert page.locator('.splash-logo').is_visible()
+            page.wait_for_selector('[data-language-choice]')
+            preview=ROOT/'tools/.pwa-preview';preview.mkdir(exist_ok=True)
+            page.screenshot(path=str(preview/'language.png'),full_page=True)
             page.evaluate('navigator.serviceWorker.ready')
             page.wait_for_function('!!navigator.serviceWorker.controller')
             registration = page.evaluate('navigator.serviceWorker.getRegistration().then(r => ({scope:r.scope, state:r.active.state}))')
@@ -98,7 +125,7 @@ def main():
             # Mock recognition events: verify transcript review, consent, and conservative parsing.
             # This tests the integration, not microphone accuracy or installed device voices.
             page.evaluate('document.getElementById("reset").click()')
-            page.click('[data-lang="en"]')
+            page.click('[data-language-choice="en"]')
             page.evaluate('''() => {
               window.testSpoken=[];
               window.SpeechSynthesisUtterance=class {constructor(text){this.text=text;}};
@@ -142,6 +169,9 @@ def main():
             assert not install['installabilityErrors'], install
             context.set_offline(True)
             page.reload()
+            page.click('[data-language-choice="mfe"]')
+            assert page.locator('#choose-voice').is_disabled()
+            assert page.locator('#kreol-note').is_visible()
             page.click('#choose-text')
             for language in ['en', 'fr', 'mfe']:
                 page.click(f'[data-lang="{language}"]')
@@ -151,28 +181,55 @@ def main():
                 assert page.locator('.journey-question:visible').count() == 1
             # The existing web app has copy/Google Calendar, not the Streamlit ICS export.
             # Complete all steps through real controls, preserving answers when going Back.
-            page.fill('#age','62'); page.click('#next')
-            page.click('#next')
-            assert page.locator('#step-error').inner_text()
-            page.click('[data-k="sex"][data-v="1"]'); page.click('#next')
-            page.fill('#height','170');page.fill('#weight','85');page.click('#next')
+            page.fill('#age','62');page.wait_for_function('step===1')
+            page.click('[data-k="sex"][data-v="1"]');page.wait_for_function('step===2')
+            page.fill('#height','170');page.fill('#weight','85');page.wait_for_function('step===3')
             for index in range(3,16):
                 radios=page.locator('.journey-question:visible [role="radio"]')
                 if radios.count(): radios.first.click()
-                page.click('#next')
+                else: page.locator('.journey-question:visible [data-zero]').click()
+                page.wait_for_function('(previous)=>step!==previous || complete',arg=index)
             assert page.locator('#report').is_visible()
             assert page.locator('#journey').is_hidden()
             assert page.locator('#copy').count() == 1
+            assert page.locator('a[href^="https://calendar.google.com/"]').count() == 1
+            for language in ['en','fr','mfe']:
+                page.click(f'[data-lang="{language}"]')
+                with page.expect_download() as event:
+                    page.click('#download-pdf')
+                pdf=Path(event.value.path()).read_bytes()
+                assert pdf.startswith(b'%PDF-1.4') and pdf.rstrip().endswith(b'%%EOF')
+                xref=re.search(rb'xref\n0 (\d+)\n((?:\d{10} \d{5} [nf] \n)+)',pdf)
+                assert xref
+                entries=xref[2].splitlines()
+                assert len(entries)==int(xref[1])
+                for number,entry in enumerate(entries[1:],1):
+                    offset=int(entry[:10]);assert pdf[offset:].startswith(f'{number} 0 obj'.encode())
+                for image in re.finditer(rb'/Subtype /Image[^\n]+/Length (\d+) >>\nstream\n',pdf):
+                    with Image.open(io.BytesIO(pdf[image.end():image.end()+int(image[1])])) as bitmap:
+                        assert bitmap.size==(1240,1754)
+                assert page.evaluate('reportLines().some(line=>line.includes(T().disclaimer))')
+            preview=ROOT/'tools/.pwa-preview';preview.mkdir(exist_ok=True)
+            page.screenshot(path=str(preview/'report.png'),full_page=True)
             page.click('#edit');page.click('#previous')
             assert page.locator('.journey-question:visible').count()==1
-            page.click('#next');page.click('#next')
-            page.click('#reset');assert page.locator('#report').is_hidden()
+            page.locator('.journey-question:visible [data-zero]').click()
+            page.wait_for_function('step===15')
+            page.locator('.journey-question:visible [data-zero]').click()
+            page.wait_for_function('complete')
+            page.click('#finish-session')
             assert page.locator('#welcome').is_visible()
+            assert page.evaluate('answered.size')==0 and page.evaluate('numericDraft.size')==0
+            assert page.locator('#voice-transcript').input_value()==''
+            page.click('#close-app')
+            assert page.locator('#start-again').is_visible()
+            page.click('#start-again')
+            assert page.evaluate('lang')=='en'
+            page.click('[data-language-choice="en"]');page.click('#choose-text')
             assert page.input_value('#age')==''
             page.set_viewport_size({'width':390,'height':844})
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
 
-            assert page.locator('a[href^="https://calendar.google.com/"]').count() == 1
             page.goto(origin + '/standalone.html')
             assert page.evaluate('MODEL.features.length') == 16
             keys = page.evaluate('caches.keys()')
@@ -183,18 +240,54 @@ def main():
             standalone = context.new_page()
             standalone.goto((ROOT / 'web/standalone.html').as_uri())
             assert standalone.evaluate('Number.isFinite(compute().p)')
+            # Keep both an active screening and an idle installed-app window open.
+            page.click('[data-language-choice="en"]');page.click('#choose-text')
+            page.fill('#age','62');page.wait_for_function('step===1')
+            old_version=page.evaluate('APP_VERSION')
+            idle=context.new_page();idle.goto(origin+'/')
+            idle.wait_for_selector('[data-language-choice]')
             # Simulate a deployment without modifying checked-in files.
+            release_override.append(old_version+'-update')
+            page_override.append(current.replace(old_version,release_override[0]))
             worker_override.append((ROOT / 'web/sw.js').read_text().replace(keys[0], keys[0] + '-update'))
-            page.evaluate('navigator.serviceWorker.getRegistration().then(r => r.update())')
-            page.wait_for_function('navigator.serviceWorker.getRegistration().then(r => !!r.waiting)', timeout=30000)
-            for tab in list(context.pages):
-                tab.close()
-            page = context.new_page()
-            page.goto(origin + '/')
+            launch=context.new_page();launch.goto(origin+'/')
+            assert launch.evaluate('APP_VERSION')==release_override[0]
+            page.click('#check-updates')
+            page.wait_for_function('document.getElementById("update-status").textContent.includes("Update ready")',timeout=30000)
+            assert page.evaluate('APP_VERSION')==old_version
+            assert page.evaluate('step')==1 and page.evaluate('S.age')==62
+            idle.wait_for_function('APP_VERSION.endsWith("-update")',timeout=30000)
+            # Starting a new session applies the release without closing other tabs.
+            page.evaluate('restartScreening()')
+            page.wait_for_function('APP_VERSION.endsWith("-update")',timeout=30000)
+            assert page.evaluate('answered.size')==0
             page.wait_for_function('caches.keys().then(keys => keys.some(k => k.endsWith("-update")) && keys.filter(k => k.startsWith("diabetes-screen-")).length === 1)')
+            context.set_offline(True);page.reload()
+            page.wait_for_selector('[data-language-choice]')
+            assert page.evaluate('APP_VERSION')==release_override[0]
+            page.click('[data-language-choice="en"]');page.click('#choose-text')
+            page.click('#check-updates')
+            page.wait_for_function('document.getElementById("update-status").textContent.includes("Cannot check")')
+            # An incomplete next deployment must leave the working offline release intact.
+            context.set_offline(False);fail_shell[0]=True
+            worker_override[0]=worker_override[0].replace(keys[0]+'-update',keys[0]+'-failed')
+            page.evaluate('''async () => {
+              const registration=await navigator.serviceWorker.getRegistration();
+              await new Promise((resolve,reject)=>{
+                registration.addEventListener('updatefound',()=>{
+                  const worker=registration.installing;
+                  worker.addEventListener('statechange',()=>{if(worker.state==='redundant')resolve();});
+                },{once:true});
+                registration.update().catch(reject);
+              });
+            }''')
+            assert not page.evaluate('caches.keys().then(keys=>keys.some(key=>key.endsWith("-failed")))')
+            context.set_offline(True);page.reload()
+            page.wait_for_selector('[data-language-choice]')
+            assert page.evaluate('APP_VERSION')==release_override[0]
             assert not errors, errors
             browser.close()
-            print('PASS: unchanged compute/report logic; manifest/icons; Chromium installability; registration; 9 baseline comparisons; offline languages/wizard/reminder controls/both pages; file standalone; deployment update and old cache removal; no page errors.')
+            print('PASS: unchanged scoring/report; installability/offline/PDF/languages; deployed update reaches idle window automatically; active screening preserved; new session applies update without closing tabs; updated offline cache; offline update-check fallback; no page errors.')
     finally:
         server.shutdown()
 
