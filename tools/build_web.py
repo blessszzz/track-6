@@ -53,11 +53,19 @@ def main():
     html = (ROOT / "tools" / "web_template.html").read_text(encoding="utf-8")
     html = html.replace("__JOURNEY_CODE__", (ROOT / "tools" / "journey.js").read_text(encoding="utf-8"))
     html = html.replace("__VOICE_CODE__", (ROOT / "tools" / "voice.js").read_text(encoding="utf-8"))
+    html = html.replace("__REPORT_CODE__", (ROOT / "tools" / "report.js").read_text(encoding="utf-8"))
+    html = html.replace("__PWA_CODE__", (ROOT / "tools" / "pwa.js").read_text(encoding="utf-8"))
     dump = lambda o: json.dumps(o, ensure_ascii=False)
     html = (html.replace("__I18N__", dump(T)).replace("__FEATNAME__", dump(FEATNAME)).replace("__EXTRA__", dump(EXTRA))
             .replace("__MODEL__", dump(model)).replace("__METRICS__", dump(metrics)).replace("__FAIR__", dump(fair)))
-    assert not re.search(r"__[A-Z0-9]+__", html), "unreplaced placeholder"
     out = ROOT / "web"
+    worker = (ROOT / "tools" / "sw_template.js").read_text(encoding="utf-8")
+    digest = hashlib.sha256(html.encode("utf-8") + worker.encode("utf-8"))
+    for asset in [out / "manifest.webmanifest", out / "_headers", *sorted((out / "icons").glob("*.png"))]:
+        digest.update(asset.read_bytes())
+    version = digest.hexdigest()[:16]
+    html = html.replace("__APP_VERSION__", version)
+    assert not re.search(r"__[A-Z0-9_]+__", html), "unreplaced placeholder"
     out.mkdir(exist_ok=True)
     (out / "index.html").write_text(html, encoding="utf-8")
     wrap = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
@@ -82,11 +90,8 @@ def main():
                   + card + 'buildCard();$("language").onchange=e=>{lang=e.target.value;document.documentElement.lang=lang;buildCard();};</script></html>')
     (admin / "index.html").write_text(admin_html, encoding="utf-8")
     (admin / "_headers").write_text("/*\n  Cache-Control: no-store\n  X-Robots-Tag: noindex, nofollow\n", encoding="utf-8")
-    worker = (ROOT / "tools" / "sw_template.js").read_text(encoding="utf-8")
-    digest = hashlib.sha256(worker.encode("utf-8"))
-    for asset in [out / "index.html", out / "standalone.html", out / "manifest.webmanifest", *sorted((out / "icons").glob("*.png"))]:
-        digest.update(asset.read_bytes())
-    (out / "sw.js").write_text(worker.replace("__VERSION__", digest.hexdigest()[:16]), encoding="utf-8")
+    (out / "sw.js").write_text(worker.replace("__VERSION__", version), encoding="utf-8")
+    (out / "version.json").write_text(json.dumps({"version": version}) + "\n", encoding="utf-8")
     print("wrote", out / "index.html", "and standalone.html", f"({len(html) / 1024:.0f} KB)")
 
 

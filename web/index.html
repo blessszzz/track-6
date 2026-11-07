@@ -123,6 +123,41 @@ progress{width:100%;height:8px;accent-color:var(--accent);margin:12px 0 28px}
 .journey-nav button{min-height:52px;justify-content:center;min-width:120px}
 button:disabled{opacity:.5;cursor:default}
 @media(prefers-reduced-motion:no-preference){.step-enter{animation:step-in .28s ease-out}@keyframes step-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}}
+
+#welcome{max-width:820px;margin:0 auto;text-align:center;padding:clamp(24px,5vw,64px);min-height:80dvh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:transparent;border:0}
+#welcome h2{font-size:clamp(1.8rem,5vw,3rem);letter-spacing:-.04em;line-height:1.15;max-width:640px;margin:12px 0}
+.eyebrow{font-family:var(--font-mono);letter-spacing:.14em;font-size:.8rem;color:var(--accent)}
+.choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;width:100%;margin:30px 0}
+.choice{font:inherit;color:var(--ink);border:1.5px solid var(--line);border-radius:20px;background:var(--surface);padding:28px 18px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:12px;min-height:185px}
+.choice strong{font-size:1.15rem}.choice small{color:var(--muted)}
+.choice-icon{display:grid;place-items:center;width:70px;height:70px;border-radius:22px;background:var(--accent-soft);font-size:2rem;color:var(--accent);font-weight:700}
+.choice:hover:not(:disabled){border-color:var(--accent);box-shadow:0 10px 28px #0f6b7318;transform:translateY(-3px)}
+.choice:disabled{opacity:.45;cursor:not-allowed}
+body:not([data-stage="screening"]) header.top,body:not([data-stage="screening"]) footer{display:none}
+body[data-stage="splash"] #welcome{position:fixed;inset:0;max-width:none;z-index:100;background:radial-gradient(ellipse at 25% 20%,var(--accent-soft),transparent 65%),var(--bg);min-height:100dvh}
+.splash-orbit{position:relative;display:grid;place-items:center;width:240px;height:240px;margin-bottom:24px}
+.splash-orbit::before,.splash-orbit::after{content:'';position:absolute;inset:0;border:1px solid var(--accent);opacity:.18;border-radius:50%}
+.splash-orbit::after{inset:20px;opacity:.3}
+.splash-logo{width:142px;height:142px;border-radius:34px;box-shadow:0 20px 70px #0f6b7333}
+.splash-loader{display:flex;gap:8px;margin:25px}.splash-loader i{width:7px;height:7px;background:var(--accent);border-radius:50%}
+.closing-icon{width:90px;height:90px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:3rem;margin-bottom:16px}
+@media(prefers-reduced-motion:no-preference){.choice{transition:transform .2s ease,box-shadow .2s ease}.splash-logo{animation:logo-float 2s ease-in-out infinite}.splash-orbit::before{animation:orbit-pulse 2s ease-out infinite}.splash-loader i{animation:dot-pulse 1s ease-in-out infinite}.splash-loader i:nth-child(2){animation-delay:.15s}.splash-loader i:nth-child(3){animation-delay:.3s}@keyframes logo-float{50%{transform:translateY(-9px)}}@keyframes orbit-pulse{to{transform:scale(1.18);opacity:0}}@keyframes dot-pulse{50%{opacity:.25;transform:translateY(-4px)}}}
+@media(max-width:520px){.choice-grid{grid-template-columns:1fr}.choice{min-height:95px;flex-direction:row;text-align:left;padding:18px}.choice small{display:none}.choice-icon{flex-shrink:0;width:56px;height:56px}.splash-orbit{width:200px;height:200px}}
+
+header.top{position:sticky;top:0;z-index:20;background:var(--bg);padding:12px 0;gap:10px;border-bottom:1px solid var(--line)}
+header.top h1{font-size:clamp(1rem,2.5vw,1.55rem)}
+.top-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.top-tools .seg button{width:44px;min-height:44px;padding:10px;display:grid;place-items:center}.top-tools svg{width:24px;height:24px}.top-tools #langs svg{height:18px}
+#mode-feedback:empty{display:none}#mode-feedback{margin:0;max-width:260px}
+#mode-tools svg,.icon-btn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;width:23px;height:23px}
+body[data-stage="mode"] header.top,body[data-stage="farewell"] header.top{display:flex}
+#view-s{max-width:960px}.question-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}.question-layout.with-voice{grid-template-columns:minmax(0,1fr) minmax(260px,.7fr)}
+#voice-controls{margin:0;padding:16px;background:var(--bg);border:1px solid var(--line);align-self:start;border-radius:16px}
+.voice-icons{display:flex;gap:8px;justify-content:center}.icon-btn{display:inline-grid;place-items:center;width:46px;min-width:46px;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}.icon-btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+#voice-review label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}.transcript-row{display:flex;align-items:center;gap:8px}#voice-transcript{font:inherit;width:100%;min-width:0;min-height:82px;resize:vertical;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:10px}
+#voice-status{font-size:.85rem;color:var(--muted);margin:10px 0;min-height:1.4em}
+#speech-permission{max-width:440px;width:calc(100% - 32px);border:1px solid var(--line);border-radius:20px;padding:28px;background:var(--surface);color:var(--ink)}#speech-permission::backdrop{background:#061b22aa;backdrop-filter:blur(4px)}
+#progress{margin:8px 0 18px}.journey-nav{margin-top:18px}.journey-question{min-height:180px}
+@media(max-width:650px){.question-layout.with-voice{grid-template-columns:1fr;gap:12px}.journey-question{min-height:0}.journey-question .qt,.journey-question .f-label,.journey-question label.f{font-size:1.1rem;margin-bottom:14px}.journey-question .seg button{padding:10px 16px;min-height:48px}.panel#journey{padding:16px}.top-tools{gap:10px}.top-tools .seg button{width:40px;padding:8px}.top-tools svg{width:22px}header.top{justify-content:center}header.top h1{font-size:1rem}#voice-transcript{min-height:64px;max-height:110px}#voice-controls{padding:12px}.journey-nav button{min-height:44px}#view-s{margin:12px auto}.bmi{font-size:.85rem}}
 </style>
 
 <div class="wrap">
@@ -136,9 +171,9 @@ button:disabled{opacity:.5;cursor:default}
   <section id="view-s">
     <div class="panel" id="journey">
       <div id="progress-label" role="status"></div>
-      <progress id="progress" max="16" value="1"></progress>
+      <progress id="progress" max="17" value="1"></progress>
       <div id="form"></div>
-      <div class="journey-nav"><button type="button" class="btn alt" id="previous"></button><button type="button" class="btn" id="next"></button></div>
+      <div class="journey-nav"><button type="button" class="btn alt" id="previous"></button><button type="button" class="btn" id="next" hidden></button></div>
       <p class="small" id="step-error" role="alert"></p>
     </div>
     <div class="panel" id="report" hidden><div class="notice" id="report-warning"></div><div id="result" aria-live="polite"></div>
@@ -146,7 +181,7 @@ button:disabled{opacity:.5;cursor:default}
     </div>
   </section>
 
-  <footer>Tech Wave 2026 · Track 6 · BRFSS 2015 (CDC) · <span id="t-foot"></span></footer>
+  <footer>Tech Wave 2026 · Track 6 · Prototype · #VITMU<div class="small">Version <span id="app-version">9e622d968b511610</span> &middot; <button type="button" class="btn alt" id="check-updates">Check for updates</button> <span id="update-status" role="status"></span></div></footer>
 </div>
 
 <script>
@@ -158,7 +193,6 @@ const NEUTRAL={age:45,sex:0,height:168,weight:75,HighBP:0,HighChol:0,Stroke:0,He
   Smoker:0,PhysActivity:1,HvyAlcoholConsump:0,Fruits:1,Veggies:1,MentHlth:0,PhysHlth:0};
 const DEMO={...NEUTRAL,age:58,sex:1,height:172,weight:92,HighBP:1,GenHlth:4};
 let S={...NEUTRAL};
-try{const l=localStorage.getItem("dscreen-lang"); if(l&&LANGS[l]) lang=l;}catch(e){}
 const T=()=>({...I18N[lang],...EXTRA[lang]});
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -225,6 +259,15 @@ document.addEventListener("input",e=>{
 let step=0, complete=false;
 const answered=new Set();
 const numericDraft=new Map();
+let advanceTimer;
+function queueAdvance(delay=450){
+  clearTimeout(advanceTimer);
+  const expectedStep=step;
+  advanceTimer=setTimeout(()=>{
+    const current=document.querySelector('.journey-question:not([hidden])');
+    if(step===expectedStep&&!complete&&current&&[...current.querySelectorAll('input')].every(input=>input.checkValidity()))$('next').click();
+  },delay);
+}
 const FLOW={
  en:{about:"About this screening",step:"Question",of:"of",back:"Back",next:"Next",finish:"View my report",edit:"Review my answers",error:"Please answer this question before continuing."},
  fr:{about:"À propos de ce dépistage",step:"Question",of:"sur",back:"Retour",next:"Suivant",finish:"Voir mon rapport",edit:"Revoir mes réponses",error:"Veuillez répondre à cette question avant de continuer."},
@@ -233,14 +276,16 @@ const FLOW={
 function buildForm(){
   buildQuestionFields();
   const form=$("form"), profile=[...form.querySelector('.row2').children];
-  const body=document.createElement('div');
-  body.className='row2'; body.append(profile[2],profile[3]);
-  const bmi=$("bmi"); body.append(bmi);
-  const questions=[profile[0],profile[1],body,...form.querySelectorAll('.q')];
+  const bmi=$("bmi");profile[2].append(bmi);
+  const questions=[profile[0],profile[1],profile[3],profile[2],...form.querySelectorAll('.q')];
   form.replaceChildren();
   questions.forEach((node,index)=>{
     const section=document.createElement('div');section.className='journey-question';section.dataset.step=index;
     section.append(node);form.append(section);
+    if(section.querySelector('input[type=range]')){
+      const zero=document.createElement('button');zero.type='button';zero.className='btn alt';zero.dataset.zero='true';zero.textContent='0';
+      zero.setAttribute('aria-label',`${section.querySelector('label').textContent}: 0`);section.append(zero);
+    }
     section.querySelectorAll('input[type=number]').forEach(input=>{
       input.required=true;
       if(numericDraft.has(input.id))input.value=numericDraft.get(input.id);
@@ -252,14 +297,16 @@ function buildForm(){
   });
 }
 function renderJourney(focus=false){
+  clearTimeout(advanceTimer);
   const f=FLOW[lang];
 
   $("journey").hidden=complete;$("report").hidden=!complete;
   $("previous").textContent=f.back;$("previous").disabled=step===0;
-  $("next").textContent=step===15?f.finish:f.next;
+  $("next").textContent=step===16?f.finish:f.next;
   $("edit").textContent=f.edit;$("reset").textContent=T().reset;
   $("report-warning").textContent=T().disclaimer;
-  $("progress-label").textContent=`${f.step} ${step+1} ${f.of} 16`;
+  $("progress-label").textContent=`${f.step} ${step+1} ${f.of} 17`;
+  $("progress").max=17;
   $("progress").value=step+1;
   $("progress").setAttribute('aria-label',$("progress-label").textContent);
   $("step-error").textContent='';
@@ -273,7 +320,8 @@ function renderJourney(focus=false){
 }
 document.addEventListener('click',event=>{
   const button=event.target.closest('button');if(!button)return;
-  if(button.matches('#form [data-k]'))answered.add(step);
+  if(button.matches('#form [data-k]')){answered.add(step);queueAdvance();}
+  if(button.dataset.zero){const input=button.closest('.journey-question').querySelector('input');input.value=0;input.dispatchEvent(new Event('input',{bubbles:true}));queueAdvance();}
   if(button.id==='previous'){step=Math.max(0,step-1);renderJourney(true);}
   if(button.id==='edit'){complete=false;renderJourney(true);}
   if(button.id==='next'){
@@ -282,7 +330,7 @@ document.addEventListener('click',event=>{
     if(invalid){invalid.reportValidity();return;}
     if(current.querySelector('[role=radio]')&&!answered.has(step)){$('step-error').textContent=FLOW[lang].error;return;}
     answered.add(step);
-    if(step===15){complete=true;update();}else step++;
+    if(step===16){complete=true;update();}else step++;
     renderJourney(true);
   }
 });
@@ -291,8 +339,11 @@ document.addEventListener('input',event=>{
     if(event.target.type==='number')numericDraft.set(event.target.id,event.target.value);
     const current=event.target.closest('.journey-question');
     if(current && [...current.querySelectorAll('input[type=number]')].every(input=>input.checkValidity()))answered.add(step);
+    if(event.target.type==='number')queueAdvance(1800);
   }
 });
+document.addEventListener('change',event=>{if(event.target.matches('#form input[type=range]'))queueAdvance(700);});
+document.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.matches('#form input')){event.preventDefault();$('next').click();}});
 
 
 /* ---------- result ---------- */
@@ -356,7 +407,6 @@ function chrome(){
   const t=T();
   document.documentElement.lang=lang==="mfe"?"mfe":lang;
   $("t-title").textContent="🩺 "+t.title; $("t-sub").textContent=t.subtitle;
-  $("t-foot").textContent=t.footer;
 
   $("langs").innerHTML=Object.entries(LANGS).map(([k,n])=>`<button type="button" data-lang="${k}" aria-pressed="${k===lang}">${n}</button>`).join("");
 }
@@ -371,46 +421,88 @@ const VOICE={
  fr:{welcome:'Bienvenue. Choisissez la voix ou le texte pour commencer votre dépistage.',voice:'Continuer avec la voix',text:'Continuer avec le texte',listen:'Dicter ma réponse',read:'Lire la question et les choix',confirm:'Confirmer cette réponse',retry:'Parler à nouveau',heard:'Vos paroles — vérifiez avant de confirmer',consent:'Autoriser le traitement vocal du navigateur. Le son peut être envoyé à son fournisseur et nécessiter Internet.',unsupported:'La reconnaissance vocale est indisponible. Utilisez les commandes texte.',local:'La reconnaissance sur cet appareil est indisponible pour cette langue. Utilisez le texte ou autorisez le traitement vocal ci-dessous.',error:'Réponse non comprise. Réessayez ou utilisez les commandes texte.',listening:'Écoute en cours… Parlez maintenant.',ready:'Vérifiez vos paroles puis confirmez. Aucune réponse n’est envoyée automatiquement.',hint:'Pour la taille et le poids, dites deux nombres dans cet ordre, en centimètres et kilogrammes. Sinon, dites un choix affiché ou un nombre.',fallback:'Sans voix créole installée, la lecture utilise une voix française locale si disponible.',stop:'Arrêter l’écoute',none:'Aucune voix locale disponible. Lisez la question à l’écran.'},
  mfe:{welcome:'Bienveni. Swazir lavwa ouswa text pou koumans ou depistaz.',voice:'Kontinie avek lavwa',text:'Kontinie avek text',listen:'Dir mo repons',read:'Lir kestion ek bann swa',confirm:'Konfirm sa repons-la',retry:'Koz ankor',heard:'Se ki ou finn dir — verifye avan konfirme',consent:'Permet navigater tret ou lavwa. Li kapav avoy son kot so fourniser ek bizin Internet.',unsupported:'Rekonesans lavwa pa disponib. Servi bann bouton ek text.',local:'Rekonesans lor sa aparey-la pa disponib pou sa lang-la. Servi text ouswa permet tretman lavwa anba.',error:'Pa finn konpran repons-la. Esey ankor ouswa servi text.',listening:'Pe ekoute… Koz aster.',ready:'Verifye ou bann parol avan konfirme. Nanye pa anvoye otomatikman.',hint:'Pou oter ek pwa, dir de sif dan sa lord-la, an santimet ek kilo. Sinon dir enn swa ki afise ouswa enn sif.',fallback:'Si pena lavwa Kreol, lektir pou servi enn lavwa Franse lokal si ena.',stop:'Aret ekoute',none:'Pena lavwa lokal disponib. Lir kestion lor lekran.'}
 };
+const LANGUAGE_ICONS={
+ en:'<svg viewBox="0 0 60 40" width="48" height="32" aria-hidden="true"><path fill="#173d7a" d="M0 0h60v40H0z"/><path stroke="white" stroke-width="10" d="m0 0 60 40M0 40 60 0"/><path stroke="#c8233d" stroke-width="4" d="m0 0 60 40M0 40 60 0"/><path stroke="white" stroke-width="15" d="M30 0v40M0 20h60"/><path stroke="#c8233d" stroke-width="8" d="M30 0v40M0 20h60"/></svg>',
+ fr:'<svg viewBox="0 0 60 40" width="48" height="32" aria-hidden="true"><path fill="#163b91" d="M0 0h20v40H0z"/><path fill="white" d="M20 0h20v40H20z"/><path fill="#e43843" d="M40 0h20v40H40z"/></svg>',
+ mfe:'<svg viewBox="0 0 60 40" width="48" height="32" aria-hidden="true"><path fill="#e43446" d="M0 0h60v10H0z"/><path fill="#17327a" d="M0 10h60v10H0z"/><path fill="#f7d545" d="M0 20h60v10H0z"/><path fill="#1c9a59" d="M0 30h60v10H0z"/></svg>'
+};
+const UI_ICONS={
+ mic:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg>',
+ text:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14M12 4v16M8 20h8"/></svg>',
+ speaker:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4 5 9H2v6h3l6 5ZM15 8a6 6 0 0 1 0 8M18 4a11 11 0 0 1 0 16"/></svg>',
+ stop:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>',
+ arrow:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7"/></svg>'
+};
+const COMPACT={
+ en:{voice:'Voice',text:'Text',answer:'Your answer',review:'Review, then tap →',permission:'Microphone access denied. You can use text.',unavailable:'Voice unavailable. Use text.',privacy:'Allow browser voice processing?',allow:'Use voice',notice:'Your browser provider may process this audio online. Answers are not saved by this app.'},
+ fr:{voice:'Voix',text:'Texte',answer:'Votre réponse',review:'Vérifiez puis touchez →',permission:'Microphone refusé. Utilisez le texte.',unavailable:'Voix indisponible. Utilisez le texte.',privacy:'Autoriser le traitement vocal ?',allow:'Utiliser la voix',notice:'Le fournisseur de votre navigateur peut traiter le son en ligne. Cette application ne sauvegarde pas vos réponses.'},
+ mfe:{voice:'Lavwa',text:'Text',answer:'Ou repons',review:'Verifye ek apiy →',permission:'Mikro pa otorize. Servi text.',unavailable:'Lavwa pa disponib. Servi text.',privacy:'Permet tretman lavwa?',allow:'Servi lavwa',notice:'Fourniser ou navigater kapav tret son online. Sa aplikasyon-la pa gard ou bann repons.'}
+};
+const STAGES={
+ en:{mode:'How would you like to continue?',language:'Change language',noVoice:'Kreol voice assistant is not available for now.',thanks:'Thank you for choosing us',close:'You can now close this tab or start another screening.',again:'Start again',pdf:'Download PDF report',done:'Finish',exit:'Exit app',auto:'Your answer will continue automatically. Press Enter to continue sooner.'},
+ fr:{mode:'Comment souhaitez-vous continuer ?',language:'Changer de langue',noVoice:'L’assistant vocal créole est indisponible pour le moment.',thanks:'Merci de nous avoir choisis',close:'Vous pouvez fermer cet onglet ou recommencer.',again:'Recommencer',pdf:'Télécharger le rapport PDF',done:'Terminer',exit:'Quitter',auto:'La réponse est validée automatiquement. Appuyez sur Entrée pour continuer plus vite.'},
+ mfe:{mode:'Kouma ou anvi kontinie?',language:'Sanz lang',noVoice:'Asistan vokal Kreol pa disponib pou lemoman.',thanks:'Mersi ki ou finn swazir nou',close:'Ou kapav ferm sa onglet-la ouswa rekoumanse.',again:'Rekoumanse',pdf:'Tele sarz rapor PDF',done:'Termine',exit:'Kit aplikasyon',auto:'Ou repons pou valide otomatikman. Apiy Enter pou kontinie pli vit.'}
+};
+let startStage='splash';
 let voiceStarted=false, voiceMode=false, recognition=null, speechEpoch=0, allowSpeechRemote=false;
+let modeRequest=0, awaitingSpeechConsent=false;
 const welcome=document.createElement('section');welcome.className='panel';welcome.id='welcome';
 $('view-s').before(welcome);
 const controls=document.createElement('section');controls.id='voice-controls';controls.className='follow';
-$('form').after(controls);
+const questionLayout=document.createElement('div');questionLayout.className='question-layout';
+$('form').before(questionLayout);questionLayout.append($('form'),controls);
+const topTools=document.createElement('div');topTools.className='top-tools';$('langs').before(topTools);topTools.append($('langs'));
+const modeTools=document.createElement('div');modeTools.id='mode-tools';modeTools.className='seg';topTools.append(modeTools);
+const modeFeedback=document.createElement('p');modeFeedback.id='mode-feedback';modeFeedback.className='small';modeFeedback.setAttribute('role','alert');topTools.append(modeFeedback);
 function speechStop(){speechEpoch++;if(window.speechSynthesis)speechSynthesis.cancel();if(recognition){recognition.abort();recognition=null;}}
-function say(text,language=lang,append=false){
-  if(!window.speechSynthesis)return;
+function say(text,language=lang,append=false,onend=null){
+  if(!window.speechSynthesis)return false;
   const voices=speechSynthesis.getVoices().filter(voice=>voice.localService);
   const prefix=language==='mfe'?'mfe':language;
   const voice=voices.find(v=>v.lang.toLowerCase().startsWith(prefix)) || (language==='mfe'?voices.find(v=>v.lang.startsWith('fr')):null);
-  if(!voice){$('voice-status').textContent=VOICE[lang].none;return;}
+  if(!voice){$('voice-status').textContent=VOICE[lang].none;return false;}
   if(!append)speechSynthesis.cancel();
   const utterance=new SpeechSynthesisUtterance(text);utterance.voice=voice;utterance.lang=voice.lang;utterance.rate=.9;
-  speechSynthesis.speak(utterance);
+  if(onend)utterance.onend=onend;
+  speechSynthesis.speak(utterance);return true;
 }
 function greetings(){
   speechStop();['en','fr','mfe'].forEach(language=>say(VOICE[language].welcome,language,true));
 }
 function voiceUI(){
   speechStop();const v=VOICE[lang];
+  if(lang==='mfe')voiceMode=false;
   welcome.hidden=voiceStarted;
-  welcome.innerHTML=`<h2>${esc(v.welcome)}</h2><p>Welcome · Bienvenue · Bienveni</p><div class="btns"><button class="btn" id="choose-voice">${esc(v.voice)}</button><button class="btn alt" id="choose-text">${esc(v.text)}</button><button class="btn alt" id="greet">▶ English · Français · Kreol</button></div>`;
+  document.body.dataset.stage=voiceStarted?'screening':startStage;
+  if(startStage==='splash')welcome.innerHTML=`<div class="splash-orbit"><img src="./icons/icon-512.png" alt="Diabetes Screening" class="splash-logo"></div><p class="eyebrow">DIABETES RISK SCREENING</p><h2>Care starts with you.</h2><div class="splash-loader" aria-label="Loading"><i></i><i></i><i></i></div>`;
+  else if(startStage==='language')welcome.innerHTML=`<p class="eyebrow">WELCOME · BIENVENUE · BIENVENI</p><h2>Choose your language</h2><p>Choisissez votre langue · Swazir ou lang</p><div class="choice-grid"><button class="choice" data-language-choice="en"><span class="choice-icon" aria-hidden="true">${LANGUAGE_ICONS.en}</span><strong>English</strong><small>Default language</small></button><button class="choice" data-language-choice="fr"><span class="choice-icon" aria-hidden="true">${LANGUAGE_ICONS.fr}</span><strong>Français</strong><small>Continuer en français</small></button><button class="choice" data-language-choice="mfe"><span class="choice-icon" aria-hidden="true">${LANGUAGE_ICONS.mfe}</span><strong>Kreol Morisien</strong><small>Kontinie an Kreol</small></button></div>`;
+  else if(startStage==='farewell')welcome.innerHTML=`<div class="closing-icon" aria-hidden="true">✓</div><h2>${esc(STAGES[lang].thanks)}</h2><p>Thank you for choosing us. Take care, and goodbye.</p><p>Merci de nous avoir choisis. Prenez soin de vous, au revoir.</p><p>Mersi ki ou finn swazir nou. Pran swin ou, orevwar.</p><p class="small">${esc(STAGES[lang].close)}</p><div class="btns"><button class="btn" id="start-again">${esc(STAGES[lang].again)}</button><button class="btn alt" id="close-app">${esc(STAGES[lang].exit)}</button></div>`;
+  else welcome.innerHTML=`<p class="eyebrow">${esc(LANGS[lang])}</p><h2>${esc(STAGES[lang].mode)}</h2><div class="choice-grid"><button class="choice" id="choose-voice" ${lang==='mfe'?'disabled aria-describedby="kreol-note"':''}><span class="choice-icon" aria-hidden="true">🎙</span><strong>${esc(COMPACT[lang].voice)}</strong></button><button class="choice" id="choose-text"><span class="choice-icon" aria-hidden="true">✎</span><strong>${esc(COMPACT[lang].text)}</strong></button></div>${lang==='mfe'?`<p id="kreol-note">${esc(STAGES.mfe.noVoice)}</p>`:''}`;
   $('journey').hidden=!voiceStarted||complete;$('report').hidden=!voiceStarted||!complete;
   controls.hidden=!voiceMode||complete;
-  controls.innerHTML=`<div class="btns"><button class="btn alt" id="read-question">${esc(v.read)}</button><button class="btn" id="listen">${esc(v.listen)}</button><button class="btn alt" id="stop-listening">${esc(v.stop)}</button><button class="btn alt" id="use-text">${esc(v.text)}</button></div><p class="small">${esc(v.hint)}</p>${lang==='mfe'?`<p class="small">${esc(v.fallback)}</p>`:''}<label class="small"><input type="checkbox" id="speech-consent"> ${esc(v.consent)}</label><p id="voice-status" role="status"></p><div id="voice-review" hidden><label for="voice-transcript">${esc(v.heard)}</label><textarea id="voice-transcript" rows="2" style="width:100%;font:inherit"></textarea><div class="btns"><button class="btn" id="confirm-voice">${esc(v.confirm)}</button><button class="btn alt" id="retry-voice">${esc(v.retry)}</button></div></div>`;
-  $('speech-consent').checked=allowSpeechRemote;
-  if(voiceMode&&voiceStarted&&!complete)readQuestion();
+  controls.innerHTML=`<div class="voice-icons"><button class="icon-btn" id="read-question" aria-label="${esc(v.read)}" title="${esc(v.read)}">${UI_ICONS.speaker}</button><button class="icon-btn primary" id="listen" aria-label="${esc(v.listen)}" title="${esc(v.listen)}">${UI_ICONS.mic}</button><button class="icon-btn" id="stop-listening" aria-label="${esc(v.stop)}" title="${esc(v.stop)}">${UI_ICONS.stop}</button></div><p id="voice-status" role="status"></p><div id="voice-review"><label for="voice-transcript">${esc(COMPACT[lang].answer)}</label><div class="transcript-row"><textarea id="voice-transcript" rows="2" placeholder="${esc(COMPACT[lang].answer)}"></textarea><button class="icon-btn primary" id="confirm-voice" disabled aria-label="${esc(v.confirm)}" title="${esc(v.confirm)}">${UI_ICONS.arrow}</button></div></div>`;
+  $('langs').innerHTML=Object.entries(LANGS).map(([key,name])=>`<button type="button" data-lang="${key}" aria-label="${esc(name)}" title="${esc(name)}" aria-pressed="${key===lang}">${LANGUAGE_ICONS[key]}</button>`).join('');
+  modeTools.innerHTML=`<button type="button" id="mode-voice" ${lang==='mfe'?'disabled':''} aria-label="${esc(COMPACT[lang].voice)}" title="${esc(lang==='mfe'?STAGES[lang].noVoice:COMPACT[lang].voice)}" aria-pressed="${voiceMode}">${UI_ICONS.mic}</button><button type="button" id="mode-text" aria-label="${esc(COMPACT[lang].text)}" title="${esc(COMPACT[lang].text)}" aria-pressed="${!voiceMode}">${UI_ICONS.text}</button>`;
+  questionLayout.classList.toggle('with-voice',voiceMode);
+  if(voiceMode&&voiceStarted&&!complete&&!awaitingSpeechConsent)readQuestion();
+  if($('report-actions'))updateReportActions();
 }
 function readQuestion(){
   speechStop();
   const section=document.querySelector('.journey-question:not([hidden])');
-  if(section)say(section.innerText);
+  if(section){
+    const epoch=speechEpoch;
+    const startListening=()=>{if(epoch===speechEpoch&&voiceMode&&!complete&&!awaitingSpeechConsent)listen();};
+    if(!say(section.innerText,lang,false,startListening))startListening();
+  }
 }
 function listen(){
+  if(lang==='mfe')return;
   speechStop();const Constructor=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!Constructor){$('voice-status').textContent=VOICE[lang].unsupported;return;}
   const instance=new Constructor();
-  if(!$('speech-consent').checked){
-    if(!('processLocally' in instance)){$('voice-status').textContent=VOICE[lang].local;return;}
+  if(!allowSpeechRemote){
+    if(!('processLocally' in instance)){showSpeechConsent();return;}
     instance.processLocally=true;
   }
   instance.lang={en:'en-GB',fr:'fr-FR',mfe:'mfe-MU'}[lang];instance.interimResults=true;instance.continuous=false;
@@ -420,9 +512,9 @@ function listen(){
     if(epoch!==speechEpoch)return;
     $('voice-transcript').value=Array.from(event.results).map(result=>result[0].transcript).join(' ');
     $('confirm-voice').disabled=!Array.from(event.results).some(result=>result.isFinal);
-    $('voice-status').textContent=Array.from(event.results).some(result=>result.isFinal)?VOICE[lang].ready:VOICE[lang].listening;
+    $('voice-status').textContent=Array.from(event.results).some(result=>result.isFinal)?COMPACT[lang].review:VOICE[lang].listening;
   };
-  instance.onerror=()=>{if(epoch===speechEpoch){$('voice-status').textContent=instance.processLocally?VOICE[lang].local:VOICE[lang].unsupported;$('confirm-voice').disabled=true;}};
+  instance.onerror=event=>{if(epoch===speechEpoch){$('voice-status').textContent=VOICE[lang].unsupported;$('confirm-voice').disabled=true;if(instance.processLocally&&event.error==='language-not-supported')showSpeechConsent();}};
   instance.onend=()=>{if(recognition===instance)recognition=null;};
   try{instance.start();$('voice-status').textContent=VOICE[lang].listening;}catch(_){$('voice-status').textContent=VOICE[lang].unsupported;}
 }
@@ -470,32 +562,250 @@ function confirmVoice(){
 document.addEventListener('journeychange',voiceUI);
 document.addEventListener('click',event=>{
   const id=event.target.closest('button')?.id;
-  if(id==='choose-voice'||id==='choose-text'){voiceStarted=true;voiceMode=id==='choose-voice';voiceUI();}
+  const languageButton=event.target.closest('[data-language-choice]');
+  if(languageButton){lang=languageButton.dataset.languageChoice;startStage='mode';full();return;}
+  if(id==='choose-language'){startStage='language';voiceUI();}
+  if(id==='choose-voice'||id==='mode-voice')chooseVoice();
+  if(id==='choose-text'||id==='mode-text'){modeRequest++;voiceStarted=true;voiceMode=false;awaitingSpeechConsent=false;voiceUI();}
+  if(id==='close-app'){speechStop();if(window.opener)window.close();}
   if(id==='greet')greetings();
   if(id==='read-question')readQuestion();
   if(id==='listen'||id==='retry-voice')listen();
   if(id==='stop-listening')speechStop();
   if(id==='confirm-voice')confirmVoice();
-  if(id==='use-text'){voiceMode=false;voiceUI();}
-  if(id==='reset'){voiceStarted=false;voiceMode=false;allowSpeechRemote=false;voiceUI();}
+  if(id==='reset'||id==='start-again'){restartScreening();}
 });
-document.addEventListener('change',event=>{if(event.target.id==='speech-consent')allowSpeechRemote=event.target.checked;});
+
 window.addEventListener('pagehide',speechStop);
 voiceUI();
-// Some browsers block speech until a tap; the greeting button always retries it.
-greetings();
-if(window.speechSynthesis){
-  speechSynthesis.addEventListener('voiceschanged',()=>{if(!voiceStarted&&speechSynthesis.getVoices().length)greetings();},{once:true});
+setTimeout(()=>{if(startStage==='splash'){startStage='language';voiceUI();}},2200);
+
+function restartScreening(){
+  clearTimeout(advanceTimer);speechStop();S={...NEUTRAL};step=0;complete=false;answered.clear();numericDraft.clear();
+  voiceStarted=false;voiceMode=false;allowSpeechRemote=false;modeRequest++;awaitingSpeechConsent=false;lang='en';startStage='language';full();
 }
+function endScreening(exit=false){
+  clearTimeout(advanceTimer);speechStop();
+  S={...NEUTRAL};answered.clear();numericDraft.clear();step=0;complete=false;
+  voiceStarted=false;voiceMode=false;allowSpeechRemote=false;modeRequest++;awaitingSpeechConsent=false;startStage='farewell';full();
+  ['en','fr','mfe'].forEach(language=>say({en:'Thank you for choosing us. Take care, and goodbye.',fr:'Merci de nous avoir choisis. Prenez soin de vous, au revoir.',mfe:'Mersi ki ou finn swazir nou. Pran swin ou. Orevwar.'}[language],language,true));
+  if(exit&&window.opener)window.close();
+}
+const speechDialog=document.createElement('dialog');speechDialog.id='speech-permission';speechDialog.setAttribute('aria-labelledby','speech-permission-title');document.body.append(speechDialog);
+function showSpeechConsent(){
+  speechStop();awaitingSpeechConsent=true;const t=COMPACT[lang];
+  speechDialog.innerHTML=`<h2 id="speech-permission-title">${esc(t.privacy)}</h2><p>${esc(t.notice)}</p><div class="btns"><button class="btn" id="allow-browser-speech">${esc(t.allow)}</button><button class="btn alt" id="decline-browser-speech">${esc(t.text)}</button></div>`;
+  if(!speechDialog.open)speechDialog.showModal();
+}
+async function chooseVoice(){
+  if(lang==='mfe')return;
+  const request=++modeRequest,Constructor=window.SpeechRecognition||window.webkitSpeechRecognition;
+  modeFeedback.textContent='';
+  if(!Constructor){modeFeedback.textContent=COMPACT[lang].unavailable;return;}
+  try{
+    if(navigator.mediaDevices?.getUserMedia){
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      stream.getTracks().forEach(track=>track.stop());
+    }
+    if(request!==modeRequest)return;
+    voiceStarted=true;voiceMode=true;
+    awaitingSpeechConsent=!allowSpeechRemote&&!('processLocally' in new Constructor());
+    voiceUI();
+    if(awaitingSpeechConsent)showSpeechConsent();
+  }catch(_){if(request===modeRequest){modeFeedback.textContent=COMPACT[lang].permission;}}
+}
+speechDialog.addEventListener('cancel',()=>{modeRequest++;awaitingSpeechConsent=false;voiceMode=false;voiceUI();});
+speechDialog.addEventListener('click',event=>{
+  if(event.target.id==='allow-browser-speech'){allowSpeechRemote=true;awaitingSpeechConsent=false;speechDialog.close();voiceUI();}
+  if(event.target.id==='decline-browser-speech'){modeRequest++;awaitingSpeechConsent=false;voiceMode=false;speechDialog.close();voiceUI();}
+});
+
+/* Local PDF export: render Unicode report text into JPEG pages, then a PDF container.
+   No external library, API, storage, patient identifier, or font download is required. */
+const reportActions=document.createElement('div');reportActions.id='report-actions';reportActions.className='btns';
+$('report').append(reportActions);
+const downloadBar=document.createElement('div');downloadBar.id='pdf-download-bar';downloadBar.className='btns';
+$('report-warning').after(downloadBar);
+function updateReportActions(){
+  const t=STAGES[lang];
+  downloadBar.innerHTML=`<button class="btn" id="download-pdf">${esc(t.pdf)}</button>`;
+  reportActions.innerHTML=`<button class="btn alt" id="finish-session">${esc(t.done)}</button><button class="btn alt" id="exit-app">${esc(t.exit)}</button>`;
+  $('reset').textContent=t.again;
+
+}
+function reportLines(){
+  const result=$('result').cloneNode(true);
+  result.querySelectorAll('.btns,#copied').forEach(node=>node.remove());
+  const lines=[T().title,new Date().toLocaleDateString({en:'en-GB',fr:'fr-FR',mfe:'fr-FR'}[lang]),'',T().disclaimer,''];
+  // cloneNode is detached, so innerText is not consistently available across browsers.
+  const host=document.createElement('div');host.style.cssText='position:fixed;left:-10000px;width:700px';host.append(result);document.body.append(host);
+  lines.push(...result.innerText.split('\n'));
+  host.remove();
+  lines.push('',T().section_profile);
+  document.querySelectorAll('.journey-question').forEach(section=>{
+    section.querySelectorAll('input').forEach(input=>{
+      const label=section.querySelector(`label[for="${input.id}"]`);
+      if(label)lines.push(`${label.textContent}: ${input.value}`);
+    });
+    const selected=section.querySelector('[role=radio][aria-checked=true]');
+    if(selected){const group=selected.closest('[role=radiogroup]');lines.push(`${$(group.getAttribute('aria-labelledby')).textContent}: ${selected.textContent}`);}
+  });
+  lines.push('',T().footer);
+  return lines;
+}
+function createReportPDF(){
+  const width=1240,height=1754,margin=72;
+  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext('2d');const images=[];let y;
+  const ink='#10282c',teal='#0f6b73',muted='#53686c',soft='#e6f3f3',inner=width-margin*2,t=T();
+  function font(size=24,bold=false){ctx.font=`${bold?'bold ':''}${size}px Arial, sans-serif`;}
+  function wrap(text,maxWidth){
+    const lines=[];let row='';
+    for(const word of String(text).trim().split(/\s+/)){
+      if(row&&ctx.measureText(row+' '+word).width>maxWidth){lines.push(row);row=word;}else row+=(row?' ':'')+word;
+    }
+    if(row)lines.push(row);return lines;
+  }
+  function box(x,top,w,h,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.roundRect(x,top,w,h,18);ctx.fill();}
+  function begin(){
+    ctx.fillStyle='#f3f6f6';ctx.fillRect(0,0,width,height);
+    const gradient=ctx.createLinearGradient(0,0,width,200);gradient.addColorStop(0,teal);gradient.addColorStop(1,'#123e46');ctx.fillStyle=gradient;ctx.fillRect(0,0,width,200);
+    box(margin,43,104,104,'#ffffff18');
+    ctx.save();ctx.translate(margin+18,62);ctx.strokeStyle='white';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(12,24);ctx.bezierCurveTo(12,48,48,48,48,24);ctx.lineTo(48,0);ctx.moveTo(30,43);ctx.lineTo(30,52);ctx.bezierCurveTo(30,78,67,78,67,48);ctx.stroke();ctx.beginPath();ctx.arc(67,40,8,0,Math.PI*2);ctx.stroke();ctx.restore();
+    font(18,true);ctx.fillStyle='#bde9eb';ctx.fillText('TECH WAVE 2026 / TRACK 6',margin+132,61);
+    font(32,true);ctx.fillStyle='#ffffff';wrap(t.title,inner-150).forEach((line,index)=>ctx.fillText(line,margin+132,106+index*39));
+    font(19);ctx.fillStyle='#d5eeee';ctx.fillText(new Date().toLocaleDateString({en:'en-GB',fr:'fr-FR',mfe:'fr-FR'}[lang]),margin,180);y=234;
+  }
+  function finish(){
+    ctx.strokeStyle='#d3dfe0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(margin,height-89);ctx.lineTo(width-margin,height-89);ctx.stroke();
+    font(18);ctx.fillStyle=muted;ctx.fillText('Tech Wave 2026 · Track 6 · Prototype · #VITMU',margin,height-50);ctx.textAlign='right';ctx.fillText(String(images.length+1),width-margin,height-50);ctx.textAlign='left';
+    images.push(Uint8Array.from(atob(canvas.toDataURL('image/jpeg',.94).split(',')[1]),c=>c.charCodeAt(0)));
+  }
+  function ensure(space){if(y+space>height-125){finish();begin();}}
+  function heading(text){ensure(80);font(25,true);ctx.fillStyle=teal;ctx.fillText(text,margin,y+27);y+=51;}
+  function paragraph(text,colour=muted,size=23){font(size);const lines=wrap(text,inner);ensure(lines.length*33+18);font(size);ctx.fillStyle=colour;lines.forEach(line=>{ctx.fillText(line,margin,y+25);y+=33;});y+=14;}
+  function callout(text,fill,colour){
+    font(23);const lines=wrap(text,inner-48),h=lines.length*32+44;ensure(h+20);box(margin,y,inner,h,fill);ctx.fillStyle=colour;lines.forEach((line,index)=>ctx.fillText(line,margin+24,y+35+index*32));y+=h+24;
+  }
+  function rows(items,valueColour=ink){
+    items.forEach(([label,value],index)=>{
+      font(23);const lines=wrap(label,inner-220),h=Math.max(56,lines.length*31+26);ensure(h+8);box(margin,y,inner,h,index%2?'#ffffff':soft);
+      ctx.fillStyle=ink;lines.forEach((line,i)=>ctx.fillText(line,margin+20,y+32+i*31));font(23,true);ctx.fillStyle=valueColour;ctx.textAlign='right';ctx.fillText(value,width-margin-20,y+32);ctx.textAlign='left';y+=h+7;
+    });y+=18;
+  }
+  begin();
+  const band=$('result').querySelector('.band'),riskColour=band.classList.contains('high')?'#b3261e':band.classList.contains('mod')?'#b36200':'#2b7a3d';
+  box(margin,y,inner,154,'#ffffff');box(margin,y,10,154,riskColour);font(27,true);ctx.fillStyle=riskColour;ctx.fillText(band.textContent,margin+30,y+49);font(22);ctx.fillStyle=muted;wrap(t.risk_est,inner-390).forEach((line,i)=>ctx.fillText(line,margin+30,y+88+i*28));font(60,true);ctx.fillStyle=ink;ctx.textAlign='right';ctx.fillText($('result').querySelector('.pct').textContent.trim(),width-margin-28,y+92);ctx.textAlign='left';y+=179;
+  paragraph(t.risk_note);callout(t.disclaimer,'#fff1dc','#5a3600');
+  const follow=$('result').querySelector('.follow').cloneNode(true);follow.querySelectorAll('.btns,#copied').forEach(node=>node.remove());
+  const host=document.createElement('div');host.style.cssText='position:fixed;left:-10000px;width:700px';host.append(follow);document.body.append(host);const followText=follow.innerText.replace(t.follow,'').trim();host.remove();
+  heading(t.follow);callout(followText,soft,ink);
+  const lists=$('result').querySelectorAll('.fac');
+  [t.factors_up,t.factors_down].forEach((title,index)=>{heading(title);rows([...lists[index].querySelectorAll('li')].map(li=>li.children.length>1?[li.children[0].innerText,li.children[1].innerText]:[li.innerText,'']),index===0?'#b3261e':teal);});
+  const {c}=compute(),entries=Object.entries(c).sort((a,b)=>b[1]-a[1]),max=Math.max(.01,...entries.map(([,value])=>Math.abs(value)));
+  ensure(entries.length*39+120);heading(t.chart_title);paragraph(t.vs_avg);
+  ensure(entries.length*39+35);box(margin,y,inner,entries.length*39+26,'#ffffff');
+  entries.forEach(([feature,value],index)=>{
+    const row=y+30+index*39,centre=margin+685;
+    font(20);ctx.fillStyle=ink;ctx.fillText(FEATNAME[lang][feature],margin+18,row);
+    ctx.fillStyle='#e3eded';ctx.fillRect(centre-180,row-16,360,18);ctx.fillStyle=value>0?'#b3261e':teal;const size=Math.abs(value)/max*180;ctx.fillRect(value>0?centre:centre-size,row-16,size,18);
+    ctx.fillStyle=muted;font(20,true);ctx.textAlign='right';ctx.fillText('×'+Math.exp(value).toFixed(2),width-margin-20,row);ctx.textAlign='left';
+  });y+=entries.length*39+53;
+  heading(t.section_profile);
+  const answers=[];
+  document.querySelectorAll('.journey-question').forEach(section=>{
+    section.querySelectorAll('input').forEach(input=>{const label=section.querySelector(`label[for="${input.id}"]`);if(label)answers.push([label.textContent,input.value]);});
+    const selected=section.querySelector('[role=radio][aria-checked=true]');if(selected){const group=selected.closest('[role=radiogroup]');answers.push([$(group.getAttribute('aria-labelledby')).textContent,selected.textContent]);}
+  });
+  rows(answers);paragraph(t.footer);
+  finish();
+  const encode=text=>new TextEncoder().encode(text),chunks=[],offsets=[0];let size=0;
+  function write(data){const bytes=typeof data==='string'?encode(data):data;chunks.push(bytes);size+=bytes.length;}
+  function object(id,body){offsets[id]=size;write(`${id} 0 obj\n`);write(body);write('\nendobj\n');}
+  write('%PDF-1.4\n');
+  object(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  object(2,`<< /Type /Pages /Count ${images.length} /Kids [${images.map((_,i)=>`${3+i*3} 0 R`).join(' ')}] >>`);
+  images.forEach((image,i)=>{
+    const page=3+i*3,imageId=page+1,contentId=page+2;
+    object(page,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Image ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>`);
+    offsets[imageId]=size;write(`${imageId} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${width} /Height ${height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${image.length} >>\nstream\n`);write(image);write('\nendstream\nendobj\n');
+    const content='q 595.28 0 0 841.89 0 0 cm /Image Do Q';
+    object(contentId,`<< /Length ${encode(content).length} >>\nstream\n${content}\nendstream`);
+  });
+  const xref=size,count=3+images.length*3;
+  write(`xref\n0 ${count}\n0000000000 65535 f \n`);
+  for(let id=1;id<count;id++)write(`${String(offsets[id]).padStart(10,'0')} 00000 n \n`);
+  write(`trailer\n<< /Size ${count} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(chunks,{type:'application/pdf'});
+}
+document.addEventListener('click',event=>{
+  const id=event.target.closest('button')?.id;
+  if(id==='download-pdf'&&complete){
+    const url=URL.createObjectURL(createReportPDF()),link=document.createElement('a');
+    link.href=url;link.download='diabetes-screening-report.pdf';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }
+  if(id==='finish-session')endScreening();
+  if(id==='exit-app')endScreening(true);
+});
+updateReportActions();
 
 </script>
 <script src="voice.js"></script>
 <script>
-// File-based standalone use remains supported; installation needs HTTPS/localhost.
-if (location.protocol !== "file:" && "serviceWorker" in navigator && window.isSecureContext) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js", {updateViaCache: "none"})
-      .catch(error => console.warn("Offline installation unavailable:", error));
+/* Public release metadata only. Never reload a screening/report in progress. */
+const APP_VERSION='9e622d968b511610';
+if(location.protocol!=='file:'&&'serviceWorker' in navigator&&window.isSecureContext){
+  let registration,checking=false,reloading=false,pending=false,knownVersion;
+  let hadController=!!navigator.serviceWorker.controller;
+  const status=document.getElementById('update-status');
+  const labels={
+    en:{check:'Check for updates',checking:'Checking for updates…',ready:'Update ready. It will apply when you start a new screening.',latest:'This app is up to date.',offline:'Cannot check for updates. Your cached app remains available.',download:'Downloading the latest app…'},
+    fr:{check:'Vérifier les mises à jour',checking:'Recherche de mises à jour…',ready:'Mise à jour prête. Elle sera appliquée au prochain dépistage.',latest:'Cette application est à jour.',offline:'Vérification impossible. La version hors ligne reste disponible.',download:'Téléchargement de la nouvelle version…'},
+    mfe:{check:'Verifye bann miz-a-zour',checking:'Pe verifye bann miz-a-zour…',ready:'Miz-a-zour pre. Li pou aplike kan ou koumans enn nouvo depistaz.',latest:'Aplikasyon-la a zour.',offline:'Pa kapav verifye. Aplikasyon-la res disponib offline.',download:'Pe tele sarz nouvo versyon…'}
+  };
+  const t=()=>labels[lang]||labels.en;
+  const busy=()=>voiceStarted||complete||startStage==='farewell';
+  function applyUpdate(){
+    document.getElementById('check-updates').textContent=t().check;
+    if(!pending||reloading)return;
+    if(busy()){status.textContent=t().ready;return;}
+    reloading=true;location.reload();
+  }
+  async function checkUpdate(manual=false){
+    if(checking||reloading||(!manual&&document.visibilityState==='hidden'))return;
+    checking=true;if(manual)status.textContent=t().checking;
+    try{
+      registration=registration||await navigator.serviceWorker.getRegistration();
+      if(!registration)throw new Error('Offline installation not ready');
+      // Do not send this version check through the app cache.
+      const response=await fetch('./version.json',{cache:'no-store',signal:AbortSignal.timeout(8000)});
+      if(!response.ok)throw new Error('Release metadata unavailable');
+      const release=await response.json();
+      if(typeof release.version!=='string')throw new Error('Invalid release metadata');
+      knownVersion=release.version;
+      if(release.version!==APP_VERSION)status.textContent=t().download;
+      await registration.update();
+      if(release.version===APP_VERSION&&!pending&&manual)status.textContent=t().latest;
+      applyUpdate();
+    }catch(_){if(manual)status.textContent=t().offline;}
+    finally{checking=false;}
+  }
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(hadController||(knownVersion&&knownVersion!==APP_VERSION)){pending=true;applyUpdate();}
+    hadController=true;
   });
+  // Register immediately; external fonts must not delay update detection.
+  navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(result=>{
+    registration=result;checkUpdate();
+  }).catch(()=>{status.textContent=t().offline;});
+  document.getElementById('check-updates').addEventListener('click',()=>checkUpdate(true));
+  document.addEventListener('journeychange',applyUpdate);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkUpdate();});
+  window.addEventListener('online',()=>checkUpdate());
+  window.addEventListener('pageshow',()=>checkUpdate());
+  setInterval(()=>checkUpdate(),60000);
+}else{
+  document.getElementById('check-updates').hidden=true;
 }
+
 </script>
