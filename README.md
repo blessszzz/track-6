@@ -117,7 +117,7 @@ submission/ pitch_deck.pptx, impact_and_ethics_note (md, docx, pdf), demo video
 ```
 
 ## Team
-`<TEAM NAME>`: `<MEMBER NAMES>`. Built for Tech Wave 2026, AI Hackathon Mauritius, Track 6.
+Hashtag: Gisele, Devnanda, Hephzibah. Built for Tech Wave 2026, Track 6, AI Hackathon, VIT Mauritius.
 
 ## License
 MIT (see LICENSE). Data: CDC BRFSS 2015, public domain survey data (Kaggle mirror: Diabetes Health Indicators Dataset).
